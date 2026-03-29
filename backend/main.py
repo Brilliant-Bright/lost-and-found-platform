@@ -28,14 +28,17 @@ url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://127.0.0.1:5500")
+# 🚨 HARDCODED VERCEL LINK: The Localhost Ghost is permanently dead
+FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
 
-# --- REAL SMTP DISPATCHER ---
+# --- REAL SMTP DISPATCHER (ANTI-FREEZE VERSION) ---
 def dispatch_email(to_address: str, subject: str, body: str):
-    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", 587))
-    sender_email = os.environ.get("SMTP_EMAIL", "test@example.com")
-    sender_password = os.environ.get("SMTP_PASSWORD", "password")
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    
+    # 🚨 HARDCODE YOUR CREDENTIALS HERE TO BYPASS RENDER 🚨
+    sender_email = "lostandfoundregistry@gmail.com" 
+    sender_password = "koqkyccnmszaehiz" # <-- REPLACE THIS EXACT STRING!
 
     msg = MIMEText(body)
     msg['Subject'] = subject
@@ -43,7 +46,8 @@ def dispatch_email(to_address: str, subject: str, body: str):
     msg['To'] = to_address
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        # THE 5-SECOND KILL SWITCH: It will NEVER hang for 4 minutes again.
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=5)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -51,7 +55,8 @@ def dispatch_email(to_address: str, subject: str, body: str):
         print(f"✅ SMTP DISPATCH SUCCESS: Email sent to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print("📧 MOCK EMAIL DISPATCHED (Check .env for real SMTP)")
+        print(f"❌ SMTP FAILED: {e}")
+        print("📧 MOCK EMAIL DISPATCHED TO LOGS INSTEAD")
         print("="*50)
         print(f"TO: {to_address}\nSUBJECT: {subject}\n\n{body}\n")
         print("="*50 + "\n")
@@ -100,7 +105,7 @@ async def cron_monitor_unread_messages():
 async def startup_event():
     asyncio.create_task(cron_monitor_unread_messages())
 
-# --- ARMORED DATA MODELS (Prevents Payload Crashes) ---
+# --- ARMORED DATA MODELS ---
 class LostItem(BaseModel):
     category: str = Field(..., max_length=50)
     color: Optional[str] = Field(None, max_length=30)
@@ -129,12 +134,10 @@ class ReadReceipt(BaseModel):
 def find_best_match(target_item, table_to_search):
     serial = target_item.unique_identifier.strip().upper() if target_item.unique_identifier else ""
     
-    # If they actually provided a real serial number, check for an exact match first
     if serial and not serial.startswith("SECURE-UUID-"):
         exact_query = supabase.table(table_to_search).select("*").eq("unique_identifier", serial).execute()
         if len(exact_query.data) > 0: return exact_query.data[0] 
 
-    # Otherwise, run the fuzzy logic algorithm
     fuzzy_query = supabase.table(table_to_search).select("*").ilike("category", f"%{target_item.category}%").execute()
     best_score = 0
     best_match_data = None
@@ -162,7 +165,6 @@ def find_best_match(target_item, table_to_search):
 # --- API ROUTES ---
 @app.post("/api/lost-items")
 def report_lost_item(item: LostItem):
-    # UUID Fix: If no serial is provided, generate a massive random string to prevent "UNKNOWN" collisions
     clean_serial = item.unique_identifier.strip() if item.unique_identifier else f"SECURE-UUID-{str(uuid.uuid4())}"
     
     supabase.table("items_lost").insert({
@@ -172,10 +174,7 @@ def report_lost_item(item: LostItem):
 
     matched_item = find_best_match(item, "items_found")
     if matched_item:
-        # Guarantee both users enter the exact same chat room
         match_room_id = matched_item["unique_identifier"]
-        
-        # Email the Finder that the Owner has claimed it
         finder_email = matched_item.get("finder_email")
         if finder_email:
             subject = "Match Found: National Registry Alert"
@@ -199,7 +198,6 @@ def report_found_item(item: FoundItem):
     matched_lost_item = find_best_match(item, "items_lost")
     if matched_lost_item:
         match_room_id = matched_lost_item["unique_identifier"]
-        
         owner_email = matched_lost_item.get("owner_email")
         if owner_email:
             subject = "Match Found: National Registry Alert"
