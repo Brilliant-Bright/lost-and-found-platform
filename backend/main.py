@@ -46,9 +46,8 @@ def dispatch_email(to_address: str, subject: str, body: str):
     msg['To'] = to_address
 
     try:
-        # THE 5-SECOND KILL SWITCH: It will NEVER hang for 4 minutes again.
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=5)
-        server.starttls()
+        # THE FIREWALL BYPASS: Using SMTP_SSL on Port 465 instead of 587
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5)
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
