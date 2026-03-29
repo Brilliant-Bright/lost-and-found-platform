@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://https://national-registry-api.onrender.com:8000";
+const BACKEND_URL = "https://national-registry-api.onrender.com";
 
 let currentRoom = "";
 let currentRole = ""; 
