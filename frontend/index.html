@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Lost & Found Registry</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>National Lost & Found Registry</h1>
+        <p>Secure, confidential routing of recovered belongings.</p>
+    </header>
+
+    <main id="main-content">
+        <div style="background-color: #ebf8fa; border-left: 4px solid #3182ce; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+            <strong>🔒 Secure Portal:</strong> To protect citizen privacy, public feeds are disabled. Items reported here are securely encrypted and automatically cross-referenced by our matching engine.
+        </div>
+
+        <div style="background-color: #edf2f7; border: 1px solid #cbd5e0; padding: 1rem; margin-bottom: 2rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <strong style="color: #2d3748;">🔄 Returning User?</strong>
+                <span style="font-size: 0.9rem; color: #4a5568; margin-left: 10px;">Resume an active claim chat.</span>
+            </div>
+            <form id="resume-claim-form" style="display: flex; gap: 10px; margin: 0; align-items: center;">
+                <input type="text" id="resume-room" placeholder="Serial / ID Number" required style="margin-bottom: 0; padding: 8px; width: 200px;">
+                <select id="resume-role" required style="padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white;">
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="Owner">Owner</option>
+                    <option value="Finder">Finder</option>
+                </select>
+                <button type="submit" style="margin-bottom: 0; padding: 8px 16px; width: auto; background-color: #4a5568;">Resume Chat</button>
+            </form>
+        </div>
+
+        <section class="report-section" id="lost-section">
+            <h2>Report a Lost Item</h2>
+            <form id="lost-item-form">
+                <input type="email" id="owner-email" placeholder="Your Email Address (Required for notifications)" required maxlength="100">
+                <input type="text" id="category" placeholder="Category (e.g., Electronics, ID)" required maxlength="50">
+                <input type="text" id="color" placeholder="Color" maxlength="30">
+                <input type="text" id="unique_identifier" placeholder="Serial Number / ID Number (Optional)" maxlength="100">
+                <textarea id="description" placeholder="Detailed description of the item and where it was lost..." required maxlength="500"></textarea>
+                
+                <div style="margin-bottom: 1rem; padding: 15px; background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 6px;">
+                    <label id="captcha-question" style="font-weight: bold; color: #2d3748;">Security Check: Loading...</label>
+                    <input type="text" id="captcha-answer" placeholder="Enter the math answer" required style="margin-bottom: 0; margin-top: 8px;">
+                </div>
+
+                <button type="submit">Submit Lost Report</button>
+            </form>
+        </section>
+
+        <hr id="divider">
+
+        <section class="report-section" id="found-section">
+            <h2>Report a Found Item</h2>
+            <p style="margin-bottom: 1rem; color: #4a5568; font-size: 0.9rem;">
+                <strong>Security Measure:</strong> Please include a "Secret Feature" (e.g., a specific scratch). The system will require the owner to verify this before routing the connection.
+            </p>
+            <form id="found-item-form">
+                <input type="email" id="finder-email" placeholder="Your Email (Strictly to notify you if the owner replies)" required maxlength="100">
+                <input type="text" id="found-category" placeholder="Category (e.g., Electronics, Wallet)" required maxlength="50">
+                <input type="text" id="found-color" placeholder="Color" maxlength="30">
+                <textarea id="found-description" placeholder="General description and where you found it..." required maxlength="500"></textarea>
+                <input type="text" id="withheld_feature" placeholder="Secret Feature (e.g., 'Batman sticker on the bottom')" required maxlength="150">
+                <input type="text" id="found-unique_identifier" placeholder="Serial/ID Number (Optional)" maxlength="100">
+                <button type="submit" style="background-color: #38a169;">Secure Found Item</button>
+            </form>
+        </section>
+
+        <section id="chat-portal" class="report-section" style="display: none; border-top: 6px solid #3182ce;">
+            <h2>Secure Claim Interface</h2>
+            
+            <button id="resolve-btn" style="background-color: #e53e3e; margin-bottom: 15px; width: auto; font-size: 0.9rem; padding: 8px 16px;">
+                End Chat & Resolve Claim
+            </button>
+
+            <div style="background: #e2e8f0; padding: 10px; border-radius: 5px; margin-bottom: 1rem; font-size: 0.9rem;">
+                <strong>System Audio:</strong> Connection established. You are completely anonymous. Please verify the "Secret Feature".
+            </div>
+            
+            <div id="chat-box" class="chat-container">
+                <div class="message-bubble msg-system">Loading secure chat...</div>
+            </div>
+            
+            <form id="chat-form" style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="text" id="chat-input" placeholder="Type your message..." required maxlength="1000" style="margin-bottom: 0;">
+                <button type="submit" style="width: auto; background-color: #2b6cb0;">Send</button>
+            </form>
+        </section>
+    </main>
+
+    <div id="custom-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" id="modal-box">
+            <h2 id="modal-title">Alert</h2>
+            <p id="modal-message">Message goes here.</p>
+            <button id="modal-action-btn" class="modal-close-btn">Acknowledge</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
