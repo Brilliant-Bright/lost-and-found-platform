@@ -37,7 +37,7 @@ def dispatch_email(to_address: str, subject: str, body: str):
     smtp_port = 587
     
     # 🚨 HARDCODE YOUR CREDENTIALS HERE TO BYPASS RENDER 🚨
-    sender_email = "lostandfoundregistry@gmail.com" 
+    sender_email = "lostnfoundregistry@gmail.com" 
     sender_password = "koqkyccnmszaehiz" # <-- REPLACE THIS EXACT STRING!
 
     msg = MIMEText(body)
