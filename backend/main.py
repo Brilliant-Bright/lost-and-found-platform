@@ -2,8 +2,7 @@ import os
 import re
 import uuid
 import asyncio
-import smtplib
-from email.mime.text import MIMEText
+import resend  # <-- Added Resend HTTP library
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,33 +30,35 @@ supabase: Client = create_client(url, key)
 # 🚨 HARDCODED VERCEL LINK: The Localhost Ghost is permanently dead
 FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
 
-# --- REAL SMTP DISPATCHER (ANTI-FREEZE VERSION) ---
+# --- HTTP EMAIL DISPATCHER (FIREWALL BYPASS) ---
+# This pulls the key directly from Render's secure vault
+resend.api_key = os.environ.get("RESEND_API_KEY")
+
 def dispatch_email(to_address: str, subject: str, body: str):
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    
-    # 🚨 HARDCODE YOUR CREDENTIALS HERE TO BYPASS RENDER 🚨
-    sender_email = "lostnfoundregistry@gmail.com" 
-    sender_password = "koqkyccnmszaehiz" # <-- REPLACE THIS EXACT STRING!
-
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = sender_email
-    msg['To'] = to_address
-
     try:
-        # THE FIREWALL BYPASS: Using SMTP_SSL on Port 465 instead of 587
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5)
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ SMTP DISPATCH SUCCESS: Email sent to {to_address}")
+        # We format the body with HTML so the magic link is a clean, clickable button
+        html_body = f"""
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">National Registry Alert</h2>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">{body.replace(chr(10), '<br>')}</p>
+            <p style="font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+                This is an automated, privacy-protected alert from the National Registry system.
+            </p>
+        </div>
+        """
+        
+        params = {
+            "from": "National Registry <onboarding@resend.dev>",
+            "to": [to_address],
+            "subject": subject,
+            "html": html_body
+        }
+        
+        email = resend.Emails.send(params)
+        print(f"✅ RESEND DISPATCH SUCCESS: HTTP Email routed to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print(f"❌ SMTP FAILED: {e}")
-        print("📧 MOCK EMAIL DISPATCHED TO LOGS INSTEAD")
-        print("="*50)
-        print(f"TO: {to_address}\nSUBJECT: {subject}\n\n{body}\n")
+        print(f"❌ RESEND FAILED: {e}")
         print("="*50 + "\n")
 
 # --- SYMMETRICAL ASYNC CRON JOB ---
@@ -91,7 +92,7 @@ async def cron_monitor_unread_messages():
                         magic_link = f"{FRONTEND_URL}/index.html?room={room_id}&role=Finder"
 
                 if target_email:
-                    body = f"You have an unread message regarding the item.\n\nLog in securely here to reply: {magic_link}\n\nThis is an automated privacy-protected alert."
+                    body = f"You have an unread message regarding the item.\n\nLog in securely here to reply: {magic_link}"
                     dispatch_email(target_email, subject, body)
                     
                     supabase.table("secure_messages").update({"fallback_sent": True}).eq("id", msg['id']).execute()
