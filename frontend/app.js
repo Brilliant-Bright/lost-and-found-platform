@@ -187,22 +187,35 @@ document.getElementById("found-item-form").addEventListener("submit", async func
     finally { submitBtn.innerText = "Secure Found Item"; }
 });
 
-document.getElementById("resolve-btn").addEventListener("click", async function() {
-    const confirmResolution = confirm("Are you sure you want to resolve this claim? This will permanently delete the chat history to protect your privacy.");
+// --- NEW: ESCAPE HATCH & CLAIM RESOLUTION ---
+async function endChatAndBurnBridge(reason) {
+    const isConfirmed = confirm(`Are you sure you want to resolve this? This will permanently delete the chat history and finalize the ${reason}.`);
     
-    if (confirmResolution) {
+    if (isConfirmed) {
         try {
-            await fetch(`${BACKEND_URL}/api/chat/${currentRoom}`, {
-                method: 'DELETE'
+            const response = await fetch(`${BACKEND_URL}/api/chat/${currentRoom}`, {
+                method: "DELETE"
             });
-            
-            clearInterval(chatInterval); 
-            
-            alert("Claim successfully resolved! The secure chat has been permanently erased.");
-            window.location.href = "index.html"; 
-            
+
+            if (response.ok) {
+                clearInterval(chatInterval); // Stops the background fetching
+                alert(`Success: Chat securely erased. The connection has been destroyed.`);
+                window.location.href = "index.html"; 
+            } else {
+                alert("Error: Could not delete chat data. Please try again.");
+            }
         } catch (error) {
-            console.error("Failed to resolve claim.");
+            console.error("Failed to delete chat:", error);
+            alert("Network error: Could not reach the server.");
         }
     }
+}
+
+// Attach the exact same logic to both buttons
+document.getElementById("resolve-btn").addEventListener("click", () => {
+    endChatAndBurnBridge("successful claim");
+});
+
+document.getElementById("reject-btn").addEventListener("click", () => {
+    endChatAndBurnBridge("false match");
 });

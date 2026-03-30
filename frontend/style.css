@@ -79,3 +79,43 @@ hr { border: 0; height: 1px; background: #e2e8f0; margin: 2rem 0; }
 .msg-system { background: #fed7d7; color: #c53030; align-self: center; font-size: 0.85rem; border-radius: 6px; }
 .msg-you { background: #3182ce; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
 .msg-them { background: #e2e8f0; color: #2d3748; align-self: flex-start; border-bottom-left-radius: 2px; }
+
+/* --- NEW: CHAT ACTIONS & MOBILE UI FIX --- */
+.chat-action-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    background: #ffffff;
+    padding: 10px 0;
+}
+
+.chat-action-container input {
+    margin-bottom: 0; /* overrides the global input margin so it aligns with the button */
+}
+
+.chat-action-container button {
+    width: auto; /* prevents the send/resume button from stretching across the whole screen */
+    flex-shrink: 0;
+}
+
+/* 📱 MOBILE OVERRIDE: Triggers only on screens smaller than 768px (Phones) */
+@media (max-width: 768px) {
+    .chat-action-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px;
+        background-color: #ffffff;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.1); /* Adds a shadow above the buttons */
+        z-index: 100;
+        margin-top: 0;
+    }
+    
+    .chat-container {
+        /* Pushes the chat bubbles up so they don't hide behind the floating buttons */
+        padding-bottom: 90px; 
+        /* Adjusts height so it fits nicely on a phone screen */
+        height: 60vh; 
+    }
+}
