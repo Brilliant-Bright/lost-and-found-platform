@@ -2,7 +2,7 @@ import os
 import re
 import uuid
 import asyncio
-import resend  # <-- Added Resend HTTP library
+import requests  # <-- We swapped Resend for standard HTTP Requests
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,38 +27,47 @@ url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-# 🚨 HARDCODED VERCEL LINK: The Localhost Ghost is permanently dead
 FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
 
-# --- HTTP EMAIL DISPATCHER (FIREWALL BYPASS) ---
-# This pulls the key directly from Render's secure vault
-resend.api_key = os.environ.get("RESEND_API_KEY")
-
+# --- HTTP EMAIL DISPATCHER (BREVO FIREWALL BYPASS) ---
 def dispatch_email(to_address: str, subject: str, body: str):
+    # Pulls the new key from Render's secure vault
+    brevo_api_key = os.environ.get("BREVO_API_KEY")
+    
+    url = "https://api.brevo.com/v3/smtp/email"
+    
+    headers = {
+        "accept": "application/json",
+        "api-key": brevo_api_key,
+        "content-type": "application/json"
+    }
+    
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">National Registry Alert</h2>
+        <p style="font-size: 16px; line-height: 1.5; color: #333;">{body.replace(chr(10), '<br>')}</p>
+        <p style="font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
+            This is an automated alert from the National Registry system.
+        </p>
+    </div>
+    """
+    
+    payload = {
+        # This matches your verified Brevo account
+        "sender": {"name": "National Registry", "email": "brilliantbrightbbb@gmail.com"},
+        "to": [{"email": to_address}],
+        "subject": subject,
+        "htmlContent": html_body
+    }
+    
     try:
-        # We format the body with HTML so the magic link is a clean, clickable button
-        html_body = f"""
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">National Registry Alert</h2>
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">{body.replace(chr(10), '<br>')}</p>
-            <p style="font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
-                This is an automated, privacy-protected alert from the National Registry system.
-            </p>
-        </div>
-        """
-        
-        params = {
-            "from": "National Registry <onboarding@resend.dev>",
-            "to": [to_address],
-            "subject": subject,
-            "html": html_body
-        }
-        
-        email = resend.Emails.send(params)
-        print(f"✅ RESEND DISPATCH SUCCESS: HTTP Email routed to {to_address}")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status() 
+        print(f"✅ BREVO DISPATCH SUCCESS: HTTP Email routed to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print(f"❌ RESEND FAILED: {e}")
+        print(f"❌ BREVO FAILED: {e}")
+        print(f"Response data: {response.text if 'response' in locals() else 'No response'}")
         print("="*50 + "\n")
 
 # --- SYMMETRICAL ASYNC CRON JOB ---
