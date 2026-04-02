@@ -23,6 +23,27 @@ function generateCaptcha() {
     document.getElementById("captcha-question").innerText = `Security Check: What is ${num1} + ${num2}?`;
 }
 
+// --- DASHBOARD NAVIGATION LOGIC ---
+function hideAllSections() {
+    document.getElementById("dashboard-nav").style.display = "none";
+    document.getElementById("lost-section").style.display = "none";
+    document.getElementById("found-section").style.display = "none";
+    document.getElementById("resume-section").style.display = "none";
+    document.getElementById("police-section").style.display = "none";
+    document.getElementById("chat-portal").style.display = "none";
+}
+
+function showDashboard() {
+    hideAllSections();
+    document.getElementById("dashboard-nav").style.display = "grid";
+}
+
+document.getElementById("btn-show-lost").addEventListener("click", () => { hideAllSections(); document.getElementById("lost-section").style.display = "block"; });
+document.getElementById("btn-show-found").addEventListener("click", () => { hideAllSections(); document.getElementById("found-section").style.display = "block"; });
+document.getElementById("btn-show-resume").addEventListener("click", () => { hideAllSections(); document.getElementById("resume-section").style.display = "block"; });
+document.getElementById("btn-show-police").addEventListener("click", () => { hideAllSections(); document.getElementById("police-section").style.display = "block"; });
+
+
 function showModal(title, message, type, roomId = null, role = null) {
     const modal = document.getElementById("custom-modal");
     const modalBox = document.getElementById("modal-box");
@@ -54,11 +75,7 @@ function openSecureChat(roomId, role) {
     currentRoom = roomId;
     currentRole = role;
 
-    document.getElementById("lost-section").style.display = "none";
-    document.getElementById("found-section").style.display = "none";
-    document.getElementById("divider").style.display = "none";
-    document.getElementById("resume-claim-form").parentElement.style.display = "none";
-    document.getElementById("police-dropoff-form").parentElement.style.display = "none"; // Hides the police form during chat
+    hideAllSections(); 
     document.getElementById("chat-portal").style.display = "block";
 
     fetchMessages(); 
@@ -124,7 +141,7 @@ document.getElementById("chat-form").addEventListener("submit", async function(e
     }
 });
 
-// --- NEW: 7-DAY POLICE DROPOFF LOGIC ---
+// --- 7-DAY POLICE DROPOFF LOGIC ---
 document.getElementById("police-dropoff-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     const payload = {
@@ -171,7 +188,6 @@ document.getElementById("lost-item-form").addEventListener("submit", async funct
         const result = await response.json();
 
         if (response.ok) {
-            // NEW: Intercept the AT_POLICE status
             if (result.status === "AT_POLICE") {
                 showModal("🚨 ITEM AT POLICE STATION", result.message, "success"); 
             } else if (result.status === "MATCH_FOUND") {
@@ -226,7 +242,7 @@ async function endChatAndBurnBridge(reason) {
             });
 
             if (response.ok) {
-                clearInterval(chatInterval); // Stops the background fetching
+                clearInterval(chatInterval); 
                 alert(`Success: Chat securely erased. The connection has been destroyed.`);
                 window.location.href = "index.html"; 
             } else {
@@ -239,7 +255,6 @@ async function endChatAndBurnBridge(reason) {
     }
 }
 
-// Attach the exact same logic to both buttons
 document.getElementById("resolve-btn").addEventListener("click", () => {
     endChatAndBurnBridge("successful claim");
 });
