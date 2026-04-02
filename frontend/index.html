@@ -17,7 +17,7 @@
             <strong>🔒 Secure Portal:</strong> To protect citizen privacy, public feeds are disabled. Items reported here are securely encrypted and automatically cross-referenced by our matching engine.
         </div>
 
-        <div style="background-color: #edf2f7; border: 1px solid #cbd5e0; padding: 1rem; margin-bottom: 2rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="background-color: #edf2f7; border: 1px solid #cbd5e0; padding: 1rem; margin-bottom: 1rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <div>
                 <strong style="color: #2d3748;">🔄 Returning User?</strong>
                 <span style="font-size: 0.9rem; color: #4a5568; margin-left: 10px;">Resume an active claim chat.</span>
@@ -30,6 +30,18 @@
                     <option value="Finder">Finder</option>
                 </select>
                 <button type="submit" style="margin-bottom: 0; padding: 8px 16px; width: auto; background-color: #4a5568;">Resume Chat</button>
+            </form>
+        </div>
+
+        <div style="background-color: #fffaf0; border: 1px solid #ed8936; padding: 1rem; margin-bottom: 2rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <strong style="color: #c05621;">🚓 7-Day Protocol: Dropped at Police?</strong>
+                <span style="font-size: 0.9rem; color: #7b341e; margin-left: 10px;">Update the system if you surrendered an item.</span>
+            </div>
+            <form id="police-dropoff-form" style="display: flex; gap: 10px; margin: 0; align-items: center;">
+                <input type="text" id="police-item-id" placeholder="Item ID Number" required style="margin-bottom: 0; padding: 8px; width: 150px;">
+                <input type="text" id="police-station-name" placeholder="Station Name (e.g., Central Police)" required style="margin-bottom: 0; padding: 8px; width: 220px;">
+                <button type="submit" style="margin-bottom: 0; padding: 8px 16px; width: auto; background-color: #dd6b20;">Log Handover</button>
             </form>
         </div>
 
@@ -72,9 +84,14 @@
         <section id="chat-portal" class="report-section" style="display: none; border-top: 6px solid #3182ce;">
             <h2>Secure Claim Interface</h2>
             
-            <button id="resolve-btn" style="background-color: #e53e3e; margin-bottom: 15px; width: auto; font-size: 0.9rem; padding: 8px 16px;">
-                End Chat & Resolve Claim
-            </button>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button id="resolve-btn" style="background-color: #38a169; width: auto; font-size: 0.9rem; padding: 8px 16px;">
+                    ✅ Claim Successful
+                </button>
+                <button id="reject-btn" style="background-color: #e53e3e; width: auto; font-size: 0.9rem; padding: 8px 16px;">
+                    ❌ Not My Item (Cancel Claim)
+                </button>
+            </div>
 
             <div style="background: #e2e8f0; padding: 10px; border-radius: 5px; margin-bottom: 1rem; font-size: 0.9rem;">
                 <strong>System Audio:</strong> Connection established. You are completely anonymous. Please verify the "Secret Feature".
@@ -84,7 +101,7 @@
                 <div class="message-bubble msg-system">Loading secure chat...</div>
             </div>
             
-            <form id="chat-form" style="display: flex; gap: 10px; margin-top: 15px;">
+            <form id="chat-form" class="chat-action-container">
                 <input type="text" id="chat-input" placeholder="Type your message..." required maxlength="1000" style="margin-bottom: 0;">
                 <button type="submit" style="width: auto; background-color: #2b6cb0;">Send</button>
             </form>

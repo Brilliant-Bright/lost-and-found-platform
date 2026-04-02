@@ -2,7 +2,7 @@ import os
 import re
 import uuid
 import asyncio
-import requests  # <-- We swapped Resend for standard HTTP Requests
+import requests  
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,7 +53,6 @@ def dispatch_email(to_address: str, subject: str, body: str):
     """
     
     payload = {
-        # This matches your verified Brevo account
         "sender": {"name": "National Registry", "email": "brilliantbrightbbb@gmail.com"},
         "to": [{"email": to_address}],
         "subject": subject,
@@ -110,9 +109,52 @@ async def cron_monitor_unread_messages():
         except Exception as e:
             print(f"Cron Error: {e}")
 
+# --- LEGAL COMPLIANCE: 6-MONTH DATA RETENTION PURGE ---
+async def cron_data_retention_purge():
+    print("⏳ Cron Job Initialized: 6-Month Data Retention Purge...")
+    while True:
+        # Run this check once every 24 hours (86400 seconds)
+        await asyncio.sleep(86400)
+        try:
+            six_months_ago = (datetime.now(timezone.utc) - timedelta(days=180)).isoformat()
+            
+            supabase.table("items_lost").delete().lt("created_at", six_months_ago).execute()
+            supabase.table("items_found").delete().lt("created_at", six_months_ago).execute()
+            supabase.table("secure_messages").delete().lt("created_at", six_months_ago).execute()
+            
+            print(f"🧹 CRON EXECUTED: Purged all records older than {six_months_ago} to comply with Data Protection Act.")
+
+        except Exception as e:
+            print(f"Retention Purge Error: {e}")
+
+# --- 7-DAY ESCALATION PROTOCOL ---
+async def cron_police_handover_reminder():
+    print("⏳ Cron Job Initialized: 7-Day Police Handover Monitor...")
+    while True:
+        await asyncio.sleep(43200) # Runs every 12 hours
+        try:
+            seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+            
+            stale_items = supabase.table("items_found").select("*").is_("police_station", "null").lt("created_at", seven_days_ago).execute()
+            
+            for item in stale_items.data:
+                finder_email = item['finder_email']
+                item_id = item['unique_identifier']
+                
+                subject = "Action Required: Surrender Item to Authorities"
+                body = f"You have held the found item for 7 days. To avoid liability, please surrender it to your nearest Police Station.\n\nOnce dropped off, log the station name securely here: {FRONTEND_URL}/index.html"
+                
+                dispatch_email(finder_email, subject, body)
+                print(f"🕒 CRON EXECUTED: Police handover reminder sent to {finder_email}")
+
+        except Exception as e:
+            print(f"Handover Cron Error: {e}")
+
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(cron_monitor_unread_messages())
+    asyncio.create_task(cron_data_retention_purge()) 
+    asyncio.create_task(cron_police_handover_reminder())
 
 # --- ARMORED DATA MODELS ---
 class LostItem(BaseModel):
@@ -138,6 +180,10 @@ class ChatMessage(BaseModel):
 class ReadReceipt(BaseModel):
     room_id: str
     role: str
+
+class PoliceDropoff(BaseModel):
+    unique_identifier: str = Field(..., max_length=100)
+    police_station: str = Field(..., max_length=150)
 
 # --- THE SMART ENGINE ---
 def find_best_match(target_item, table_to_search):
@@ -183,6 +229,11 @@ def report_lost_item(item: LostItem):
 
     matched_item = find_best_match(item, "items_found")
     if matched_item:
+        # CHECK IF IT IS AT THE POLICE FIRST
+        if matched_item.get("police_station"):
+            station_name = matched_item["police_station"]
+            return {"status": "AT_POLICE", "message": f"🚨 MATCH FOUND! The finder held this item for 7 days but has now surrendered it to authorities. Please visit: {station_name} to claim your property."}
+            
         match_room_id = matched_item["unique_identifier"]
         finder_email = matched_item.get("finder_email")
         if finder_email:
@@ -216,6 +267,11 @@ def report_found_item(item: FoundItem):
         return {"status": "MATCH_FOUND", "message": "🚨 URGENT MATCH! The owner has been notified via email.", "room_id": match_room_id}
     
     return {"status": "STORED", "message": "Item secured."}
+
+@app.put("/api/found-items/police")
+def register_police_dropoff(dropoff: PoliceDropoff):
+    supabase.table("items_found").update({"police_station": dropoff.police_station}).eq("unique_identifier", dropoff.unique_identifier).execute()
+    return {"status": "success", "message": "Item successfully transferred to Police custody. Thank you for your civic duty."}
 
 @app.post("/api/chat")
 def send_message(msg: ChatMessage):

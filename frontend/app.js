@@ -58,6 +58,7 @@ function openSecureChat(roomId, role) {
     document.getElementById("found-section").style.display = "none";
     document.getElementById("divider").style.display = "none";
     document.getElementById("resume-claim-form").parentElement.style.display = "none";
+    document.getElementById("police-dropoff-form").parentElement.style.display = "none"; // Hides the police form during chat
     document.getElementById("chat-portal").style.display = "block";
 
     fetchMessages(); 
@@ -123,6 +124,27 @@ document.getElementById("chat-form").addEventListener("submit", async function(e
     }
 });
 
+// --- NEW: 7-DAY POLICE DROPOFF LOGIC ---
+document.getElementById("police-dropoff-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const payload = {
+        unique_identifier: document.getElementById("police-item-id").value.trim(),
+        police_station: document.getElementById("police-station-name").value.trim()
+    };
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/found-items/police`, {
+            method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+            showModal("Handover Complete", result.message, "success");
+            document.getElementById("police-dropoff-form").reset();
+        }
+    } catch (error) { showModal("Error", "Could not log handover.", "error"); }
+});
+
 document.getElementById("lost-item-form").addEventListener("submit", async function(event) {
     event.preventDefault(); 
     const userAnswer = parseInt(document.getElementById("captcha-answer").value);
@@ -149,8 +171,14 @@ document.getElementById("lost-item-form").addEventListener("submit", async funct
         const result = await response.json();
 
         if (response.ok) {
-            if (result.status === "MATCH_FOUND") showModal("🚨 URGENT MATCH!", result.message, "match", result.room_id, "Owner");
-            else showModal("Item Registered", result.message, "success");
+            // NEW: Intercept the AT_POLICE status
+            if (result.status === "AT_POLICE") {
+                showModal("🚨 ITEM AT POLICE STATION", result.message, "success"); 
+            } else if (result.status === "MATCH_FOUND") {
+                showModal("🚨 URGENT MATCH!", result.message, "match", result.room_id, "Owner");
+            } else {
+                showModal("Item Registered", result.message, "success");
+            }
             document.getElementById("lost-item-form").reset(); 
             generateCaptcha(); 
         } 
@@ -187,7 +215,7 @@ document.getElementById("found-item-form").addEventListener("submit", async func
     finally { submitBtn.innerText = "Secure Found Item"; }
 });
 
-// --- NEW: ESCAPE HATCH & CLAIM RESOLUTION ---
+// --- ESCAPE HATCH & CLAIM RESOLUTION ---
 async function endChatAndBurnBridge(reason) {
     const isConfirmed = confirm(`Are you sure you want to resolve this? This will permanently delete the chat history and finalize the ${reason}.`);
     
