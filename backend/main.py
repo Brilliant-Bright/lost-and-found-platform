@@ -2,7 +2,9 @@ import os
 import re
 import uuid
 import asyncio
-import requests  
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,18 +31,11 @@ supabase: Client = create_client(url, key)
 
 FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
 
-# --- HTTP EMAIL DISPATCHER (BREVO FIREWALL BYPASS) ---
+# --- NATIVE GMAIL DISPATCHER (BYPASSES ALL API FIREWALLS) ---
 def dispatch_email(to_address: str, subject: str, body: str):
-    # Pulls the new key from Render's secure vault
-    brevo_api_key = os.environ.get("BREVO_API_KEY")
-    
-    url = "https://api.brevo.com/v3/smtp/email"
-    
-    headers = {
-        "accept": "application/json",
-        "api-key": brevo_api_key,
-        "content-type": "application/json"
-    }
+    sender_email = "lostnfoundregistry@gmail.com"
+    # Pulls your secure App Password from Render
+    sender_password = os.environ.get("GMAIL_APP_PASSWORD") 
     
     html_body = f"""
     <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto;">
@@ -52,21 +47,22 @@ def dispatch_email(to_address: str, subject: str, body: str):
     </div>
     """
     
-    payload = {
-        "sender": {"name": "National Registry", "email": "iambrightbb3@gmail.com"},
-        "to": [{"email": to_address}],
-        "subject": subject,
-        "htmlContent": html_body
-    }
+    # Package the email securely
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"National Registry <{sender_email}>"
+    msg["To"] = to_address
+    msg.attach(MIMEText(html_body, "html"))
     
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        response.raise_for_status() 
-        print(f"BREVO DISPATCH SUCCESS: HTTP Email routed to {to_address}")
+        # Connect directly to Google's secure SMTP server
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, to_address, msg.as_string())
+        print(f"GMAIL DISPATCH SUCCESS: Email routed directly to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print(f"BREVO FAILED: {e}")
-        print(f"Response data: {response.text if 'response' in locals() else 'No response'}")
+        print(f"GMAIL DISPATCH FAILED: {e}")
         print("="*50 + "\n")
 
 # --- SYMMETRICAL ASYNC CRON JOB ---
