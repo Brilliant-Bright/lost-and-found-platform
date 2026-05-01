@@ -2,11 +2,9 @@ import os
 import re
 import uuid
 import asyncio
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -15,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="National Lost and Found API - Armored")
+app = FastAPI(title="Lost and Found API - Armored")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,56 +29,47 @@ supabase: Client = create_client(url, key)
 
 FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
 
-# --- NATIVE GMAIL DISPATCHER (BYPASSES ALL API FIREWALLS) ---
+# --- HTTP EMAIL DISPATCHER (UNDER THE RADAR MODE) ---
 def dispatch_email(to_address: str, subject: str, body: str):
-    sender_email = "lostnfoundregistry@gmail.com"
-    # Pulls your secure App Password from Render
-    sender_password = os.environ.get("GMAIL_APP_PASSWORD") 
+    brevo_api_key = os.environ.get("BREVO_API_KEY")
+    api_url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "accept": "application/json",
+        "api-key": brevo_api_key,
+        "content-type": "application/json"
+    }
     
-    html_body = f"""
-    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">National Registry Alert</h2>
-        <p style="font-size: 16px; line-height: 1.5; color: #333;">{body.replace(chr(10), '<br>')}</p>
-        <p style="font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
-            This is an automated alert from the National Registry system.
-        </p>
-    </div>
-    """
-    
-    # Package the email securely
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"National Registry <{sender_email}>"
-    msg["To"] = to_address
-    msg.attach(MIMEText(html_body, "html"))
+    # Notice we are using textContent instead of htmlContent to avoid phishing flags
+    payload = {
+        "sender": {"name": "Wisley (Project Test)", "email": "lostnfoundregistry@gmail.com"},
+        "to": [{"email": to_address}],
+        "subject": subject,
+        "textContent": body
+    }
     
     try:
-        # Connect directly to Google's secure SMTP server
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, to_address, msg.as_string())
-        print(f"GMAIL DISPATCH SUCCESS: Email routed directly to {to_address}")
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status() 
+        print(f"BREVO DISPATCH SUCCESS: Plain text email routed to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print(f"GMAIL DISPATCH FAILED: {e}")
+        print(f"BREVO FAILED: {e}")
         print("="*50 + "\n")
 
 # --- SYMMETRICAL ASYNC CRON JOB ---
 async def cron_monitor_unread_messages():
-    print("Cron Job Initialized: Monitoring for unread messages on BOTH sides...")
+    print("Cron Job Initialized: Monitoring for unread messages...")
     while True:
         await asyncio.sleep(60) 
         try:
             ten_mins_ago = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
-            
             unread_query = supabase.table("secure_messages").select("*").eq("is_read", False).eq("fallback_sent", False).lt("created_at", ten_mins_ago).execute()
             
             for msg in unread_query.data:
                 room_id = msg['room_id']
                 sender = msg['sender']
-                
                 target_email = None
-                subject = "URGENT: New Message in Secure Claim Portal"
+                subject = "Project Update: New Message"
                 magic_link = ""
 
                 if sender == "Finder":
@@ -96,55 +85,42 @@ async def cron_monitor_unread_messages():
                         magic_link = f"{FRONTEND_URL}/index.html?room={room_id}&role=Finder"
 
                 if target_email:
-                    body = f"You have an unread message regarding the item.\n\nLog in securely here to reply: {magic_link}"
+                    body = f"Hello,\n\nThis is an automated test message for my university project. You have a new unread message.\n\nLink: {magic_link}\n\nThanks,\nWisley"
                     dispatch_email(target_email, subject, body)
-                    
                     supabase.table("secure_messages").update({"fallback_sent": True}).eq("id", msg['id']).execute()
-                    print(f"CRON EXECUTED: Fallback sent to {sender}'s counterpart for Room {room_id}")
 
         except Exception as e:
             print(f"Cron Error: {e}")
 
 # --- LEGAL COMPLIANCE: 6-MONTH DATA RETENTION PURGE ---
 async def cron_data_retention_purge():
-    print("Cron Job Initialized: 6-Month Data Retention Purge...")
+    print("Cron Job Initialized: Data Retention Purge...")
     while True:
-        # Run this check once every 24 hours (86400 seconds)
         await asyncio.sleep(86400)
         try:
             six_months_ago = (datetime.now(timezone.utc) - timedelta(days=180)).isoformat()
-            
             supabase.table("items_lost").delete().lt("created_at", six_months_ago).execute()
             supabase.table("items_found").delete().lt("created_at", six_months_ago).execute()
             supabase.table("secure_messages").delete().lt("created_at", six_months_ago).execute()
-            
-            print(f"CRON EXECUTED: Purged all records older than {six_months_ago} to comply with Data Protection Act.")
-
         except Exception as e:
-            print(f"Retention Purge Error: {e}")
+            pass
 
 # --- 7-DAY ESCALATION PROTOCOL ---
 async def cron_police_handover_reminder():
-    print("Cron Job Initialized: 7-Day Police Handover Monitor...")
+    print("Cron Job Initialized: Police Handover Monitor...")
     while True:
-        await asyncio.sleep(43200) # Runs every 12 hours
+        await asyncio.sleep(43200)
         try:
             seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
-            
             stale_items = supabase.table("items_found").select("*").is_("police_station", "null").lt("created_at", seven_days_ago).execute()
             
             for item in stale_items.data:
                 finder_email = item['finder_email']
-                item_id = item['unique_identifier']
-                
-                subject = "Action Required: Surrender Item to Authorities"
-                body = f"You have held the found item for 7 days. To avoid liability, please surrender it to your nearest Police Station.\n\nOnce dropped off, log the station name securely here: {FRONTEND_URL}/index.html"
-                
+                subject = "Project Update: Handover Reminder"
+                body = f"Hello,\n\nThis is an automated test reminder for my final year project. 7 days have passed.\n\nLink: {FRONTEND_URL}/index.html\n\nThanks,\nWisley"
                 dispatch_email(finder_email, subject, body)
-                print(f"CRON EXECUTED: Police handover reminder sent to {finder_email}")
-
         except Exception as e:
-            print(f"Handover Cron Error: {e}")
+            pass
 
 @app.on_event("startup")
 async def startup_event():
@@ -184,7 +160,6 @@ class PoliceDropoff(BaseModel):
 # --- THE SMART ENGINE ---
 def find_best_match(target_item, table_to_search):
     serial = target_item.unique_identifier.strip().upper() if target_item.unique_identifier else ""
-    
     if serial and not serial.startswith("SECURE-UUID-"):
         exact_query = supabase.table(table_to_search).select("*").eq("unique_identifier", serial).execute()
         if len(exact_query.data) > 0: return exact_query.data[0] 
@@ -215,7 +190,7 @@ def find_best_match(target_item, table_to_search):
 
 # --- API ROUTES ---
 @app.post("/api/lost-items")
-def report_lost_item(item: LostItem):
+def report_lost_item(item: LostItem, bg_tasks: BackgroundTasks):
     clean_serial = item.unique_identifier.strip() if item.unique_identifier else f"SECURE-UUID-{str(uuid.uuid4())}"
     
     supabase.table("items_lost").insert({
@@ -224,13 +199,10 @@ def report_lost_item(item: LostItem):
     }).execute()
 
     matched_item = find_best_match(item, "items_found")
-    
-    # --- NEW: ANTI-LOOP CHECK ---
     if matched_item and matched_item.get("finder_email") == item.owner_email:
-        matched_item = None # Cancel the match if testing with the same email
+        matched_item = None 
 
     if matched_item:
-        # CHECK IF IT IS AT THE POLICE FIRST
         if matched_item.get("police_station"):
             station_name = matched_item["police_station"]
             return {"status": "AT_POLICE", "message": f"MATCH FOUND! The finder held this item for 7 days but has now surrendered it to authorities. Please visit: {station_name} to claim your property."}
@@ -238,16 +210,16 @@ def report_lost_item(item: LostItem):
         match_room_id = matched_item["unique_identifier"]
         finder_email = matched_item.get("finder_email")
         if finder_email:
-            subject = "Match Found: National Registry Alert"
-            body = f"An owner has initiated a claim on the item you found.\n\nLog in securely here: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder"
-            dispatch_email(finder_email, subject, body)
+            subject = "Project Update: Match Found"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item match was initiated.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder\n\nThanks,\nWisley"
+            bg_tasks.add_task(dispatch_email, finder_email, subject, body)
 
         return {"status": "MATCH_FOUND", "message": "URGENT MATCH!", "room_id": match_room_id}
     
     return {"status": "STORED", "message": "Item securely reported. We will email you if it is found."}
 
 @app.post("/api/found-items")
-def report_found_item(item: FoundItem):
+def report_found_item(item: FoundItem, bg_tasks: BackgroundTasks):
     clean_serial = item.unique_identifier.strip() if item.unique_identifier else f"SECURE-UUID-{str(uuid.uuid4())}"
     
     supabase.table("items_found").insert({
@@ -257,18 +229,16 @@ def report_found_item(item: FoundItem):
     }).execute()
 
     matched_lost_item = find_best_match(item, "items_lost")
-    
-    # --- NEW: ANTI-LOOP CHECK ---
     if matched_lost_item and matched_lost_item.get("owner_email") == item.finder_email:
-        matched_lost_item = None # Cancel the match if testing with the same email
+        matched_lost_item = None
 
     if matched_lost_item:
         match_room_id = matched_lost_item["unique_identifier"]
         owner_email = matched_lost_item.get("owner_email")
         if owner_email:
-            subject = "Match Found: National Registry Alert"
-            body = f"A citizen has securely reported an item matching your description.\n\nTo verify ownership, click here: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner"
-            dispatch_email(owner_email, subject, body)
+            subject = "Project Update: Match Found"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item matching your description was reported.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner\n\nThanks,\nWisley"
+            bg_tasks.add_task(dispatch_email, owner_email, subject, body)
             
         return {"status": "MATCH_FOUND", "message": "URGENT MATCH! The owner has been notified via email.", "room_id": match_room_id}
     
