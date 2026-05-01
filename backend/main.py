@@ -53,7 +53,7 @@ def dispatch_email(to_address: str, subject: str, body: str):
     """
     
     payload = {
-        "sender": {"name": "National Registry", "email": "brilliantbrightbbb@gmail.com"},
+        "sender": {"name": "National Registry", "email": "iambrightbb3@gmail.com"},
         "to": [{"email": to_address}],
         "subject": subject,
         "htmlContent": html_body
@@ -62,16 +62,16 @@ def dispatch_email(to_address: str, subject: str, body: str):
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         response.raise_for_status() 
-        print(f"✅ BREVO DISPATCH SUCCESS: HTTP Email routed to {to_address}")
+        print(f"BREVO DISPATCH SUCCESS: HTTP Email routed to {to_address}")
     except Exception as e:
         print("\n" + "="*50)
-        print(f"❌ BREVO FAILED: {e}")
+        print(f"BREVO FAILED: {e}")
         print(f"Response data: {response.text if 'response' in locals() else 'No response'}")
         print("="*50 + "\n")
 
 # --- SYMMETRICAL ASYNC CRON JOB ---
 async def cron_monitor_unread_messages():
-    print("⏳ Cron Job Initialized: Monitoring for unread messages on BOTH sides...")
+    print("Cron Job Initialized: Monitoring for unread messages on BOTH sides...")
     while True:
         await asyncio.sleep(60) 
         try:
@@ -104,14 +104,14 @@ async def cron_monitor_unread_messages():
                     dispatch_email(target_email, subject, body)
                     
                     supabase.table("secure_messages").update({"fallback_sent": True}).eq("id", msg['id']).execute()
-                    print(f"🕒 CRON EXECUTED: Fallback sent to {sender}'s counterpart for Room {room_id}")
+                    print(f"CRON EXECUTED: Fallback sent to {sender}'s counterpart for Room {room_id}")
 
         except Exception as e:
             print(f"Cron Error: {e}")
 
 # --- LEGAL COMPLIANCE: 6-MONTH DATA RETENTION PURGE ---
 async def cron_data_retention_purge():
-    print("⏳ Cron Job Initialized: 6-Month Data Retention Purge...")
+    print("Cron Job Initialized: 6-Month Data Retention Purge...")
     while True:
         # Run this check once every 24 hours (86400 seconds)
         await asyncio.sleep(86400)
@@ -122,14 +122,14 @@ async def cron_data_retention_purge():
             supabase.table("items_found").delete().lt("created_at", six_months_ago).execute()
             supabase.table("secure_messages").delete().lt("created_at", six_months_ago).execute()
             
-            print(f"🧹 CRON EXECUTED: Purged all records older than {six_months_ago} to comply with Data Protection Act.")
+            print(f"CRON EXECUTED: Purged all records older than {six_months_ago} to comply with Data Protection Act.")
 
         except Exception as e:
             print(f"Retention Purge Error: {e}")
 
 # --- 7-DAY ESCALATION PROTOCOL ---
 async def cron_police_handover_reminder():
-    print("⏳ Cron Job Initialized: 7-Day Police Handover Monitor...")
+    print("Cron Job Initialized: 7-Day Police Handover Monitor...")
     while True:
         await asyncio.sleep(43200) # Runs every 12 hours
         try:
@@ -145,7 +145,7 @@ async def cron_police_handover_reminder():
                 body = f"You have held the found item for 7 days. To avoid liability, please surrender it to your nearest Police Station.\n\nOnce dropped off, log the station name securely here: {FRONTEND_URL}/index.html"
                 
                 dispatch_email(finder_email, subject, body)
-                print(f"🕒 CRON EXECUTED: Police handover reminder sent to {finder_email}")
+                print(f"CRON EXECUTED: Police handover reminder sent to {finder_email}")
 
         except Exception as e:
             print(f"Handover Cron Error: {e}")
@@ -228,11 +228,16 @@ def report_lost_item(item: LostItem):
     }).execute()
 
     matched_item = find_best_match(item, "items_found")
+    
+    # --- NEW: ANTI-LOOP CHECK ---
+    if matched_item and matched_item.get("finder_email") == item.owner_email:
+        matched_item = None # Cancel the match if testing with the same email
+
     if matched_item:
         # CHECK IF IT IS AT THE POLICE FIRST
         if matched_item.get("police_station"):
             station_name = matched_item["police_station"]
-            return {"status": "AT_POLICE", "message": f"🚨 MATCH FOUND! The finder held this item for 7 days but has now surrendered it to authorities. Please visit: {station_name} to claim your property."}
+            return {"status": "AT_POLICE", "message": f"MATCH FOUND! The finder held this item for 7 days but has now surrendered it to authorities. Please visit: {station_name} to claim your property."}
             
         match_room_id = matched_item["unique_identifier"]
         finder_email = matched_item.get("finder_email")
@@ -241,7 +246,7 @@ def report_lost_item(item: LostItem):
             body = f"An owner has initiated a claim on the item you found.\n\nLog in securely here: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder"
             dispatch_email(finder_email, subject, body)
 
-        return {"status": "MATCH_FOUND", "message": "🚨 URGENT MATCH!", "room_id": match_room_id}
+        return {"status": "MATCH_FOUND", "message": "URGENT MATCH!", "room_id": match_room_id}
     
     return {"status": "STORED", "message": "Item securely reported. We will email you if it is found."}
 
@@ -256,6 +261,11 @@ def report_found_item(item: FoundItem):
     }).execute()
 
     matched_lost_item = find_best_match(item, "items_lost")
+    
+    # --- NEW: ANTI-LOOP CHECK ---
+    if matched_lost_item and matched_lost_item.get("owner_email") == item.finder_email:
+        matched_lost_item = None # Cancel the match if testing with the same email
+
     if matched_lost_item:
         match_room_id = matched_lost_item["unique_identifier"]
         owner_email = matched_lost_item.get("owner_email")
@@ -264,7 +274,7 @@ def report_found_item(item: FoundItem):
             body = f"A citizen has securely reported an item matching your description.\n\nTo verify ownership, click here: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner"
             dispatch_email(owner_email, subject, body)
             
-        return {"status": "MATCH_FOUND", "message": "🚨 URGENT MATCH! The owner has been notified via email.", "room_id": match_room_id}
+        return {"status": "MATCH_FOUND", "message": "URGENT MATCH! The owner has been notified via email.", "room_id": match_room_id}
     
     return {"status": "STORED", "message": "Item secured."}
 
