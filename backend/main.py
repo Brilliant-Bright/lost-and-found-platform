@@ -3,6 +3,8 @@ import re
 import uuid
 import asyncio
 import requests
+import random
+import string
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,9 +41,8 @@ def dispatch_email(to_address: str, subject: str, body: str):
         "content-type": "application/json"
     }
     
-    # Notice we are using textContent instead of htmlContent to avoid phishing flags
     payload = {
-        "sender": {"name": "Wisley (Project Test)", "email": "lostnfoundregistry@gmail.com"},
+        "sender": {"name": "Lost and Found Registry", "email": "lostnfoundregistry@gmail.com"},
         "to": [{"email": to_address}],
         "subject": subject,
         "textContent": body
@@ -69,7 +70,6 @@ async def cron_monitor_unread_messages():
                 room_id = msg['room_id']
                 sender = msg['sender']
                 target_email = None
-                subject = "Project Update: New Message"
                 magic_link = ""
 
                 if sender == "Finder":
@@ -85,7 +85,10 @@ async def cron_monitor_unread_messages():
                         magic_link = f"{FRONTEND_URL}/index.html?room={room_id}&role=Finder"
 
                 if target_email:
-                    body = f"Hello,\n\nThis is an automated test message for my university project. You have a new unread message.\n\nLink: {magic_link}\n\nThanks,\nWisley"
+                    anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                    subject = f"Project Update: New Message [{anti_spam_ref}]"
+                    body = f"Hello,\n\nThis is an automated test message for my university project. You have a new unread message.\n\nLink: {magic_link}\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+                    
                     dispatch_email(target_email, subject, body)
                     supabase.table("secure_messages").update({"fallback_sent": True}).eq("id", msg['id']).execute()
 
@@ -116,8 +119,9 @@ async def cron_police_handover_reminder():
             
             for item in stale_items.data:
                 finder_email = item['finder_email']
-                subject = "Project Update: Handover Reminder"
-                body = f"Hello,\n\nThis is an automated test reminder for my final year project. 7 days have passed.\n\nLink: {FRONTEND_URL}/index.html\n\nThanks,\nWisley"
+                anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                subject = f"Project Update: Handover Reminder [{anti_spam_ref}]"
+                body = f"Hello,\n\nThis is an automated test reminder for my final year project. 7 days have passed.\n\nLink: {FRONTEND_URL}/index.html\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
                 dispatch_email(finder_email, subject, body)
         except Exception as e:
             pass
@@ -210,8 +214,12 @@ def report_lost_item(item: LostItem, bg_tasks: BackgroundTasks):
         match_room_id = matched_item["unique_identifier"]
         finder_email = matched_item.get("finder_email")
         if finder_email:
-            subject = "Project Update: Match Found"
-            body = f"Hello,\n\nThis is an automated test notification for a university project. An item match was initiated.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder\n\nThanks,\nWisley"
+            masked_id = f"***-{match_room_id[-6:]}"
+            anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            
+            subject = f"Project Update: Match Found [{anti_spam_ref}]"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item match was initiated for ID: {masked_id}.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+            
             bg_tasks.add_task(dispatch_email, finder_email, subject, body)
 
         return {"status": "MATCH_FOUND", "message": "URGENT MATCH!", "room_id": match_room_id}
@@ -236,8 +244,12 @@ def report_found_item(item: FoundItem, bg_tasks: BackgroundTasks):
         match_room_id = matched_lost_item["unique_identifier"]
         owner_email = matched_lost_item.get("owner_email")
         if owner_email:
-            subject = "Project Update: Match Found"
-            body = f"Hello,\n\nThis is an automated test notification for a university project. An item matching your description was reported.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner\n\nThanks,\nWisley"
+            masked_id = f"***-{match_room_id[-6:]}" 
+            anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            
+            subject = f"Project Update: Match Found [{anti_spam_ref}]"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item matching your description (ID: {masked_id}) was reported.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+            
             bg_tasks.add_task(dispatch_email, owner_email, subject, body)
             
         return {"status": "MATCH_FOUND", "message": "URGENT MATCH! The owner has been notified via email.", "room_id": match_room_id}
