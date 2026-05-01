@@ -4,125 +4,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National Lost & Found Registry</title>
+    <!-- Tailwind CSS for Enterprise Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons (Professional SVGs instead of Emojis) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Your original stylesheet is kept intact -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <header>
-        <h1>National Lost & Found Registry</h1>
-        <p>Secure, confidential routing of recovered belongings.</p>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white py-5 shadow-md">
+        <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i data-lucide="shield-check" class="w-8 h-8 text-blue-400"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">National Registry</h1>
+                    <p class="text-xs text-slate-400 font-medium">Secure Citizen Property Portal</p>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <main id="main-content">
-        <div style="background-color: #ebf8fa; border-left: 4px solid #3182ce; padding: 1rem; margin-bottom: 2rem; border-radius: 4px;">
-            <strong>🔒 Secure Portal:</strong> To protect citizen privacy, public feeds are disabled. Items reported here are securely encrypted and cross-referenced by our matching engine.
-        </div>
-
-        <div id="dashboard-nav" class="dashboard-grid">
-            <div class="dash-card" id="btn-show-lost">
-                <h3>🔍 Report Lost Item</h3>
-                <p>Lost something? Log it securely to find it.</p>
-            </div>
-            <div class="dash-card" id="btn-show-found">
-                <h3>📦 Report Found Item</h3>
-                <p>Found something? Protect it here.</p>
-            </div>
-            <div class="dash-card" id="btn-show-resume">
-                <h3>💬 Resume Claim</h3>
-                <p>Returning user? Access your active chat.</p>
-            </div>
-            <div class="dash-card" id="btn-show-police">
-                <h3>🚓 Police Handover</h3>
-                <p>7-Day Protocol: Log a police dropoff.</p>
-            </div>
-        </div>
-
-        <section id="resume-section" class="report-section" style="display: none;">
-            <button class="back-btn" onclick="showDashboard()">⬅ Back to Dashboard</button>
-            <h2>Resume Active Claim</h2>
-            <form id="resume-claim-form" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="resume-room" placeholder="Serial / ID Number" required style="width: 200px;">
-                <select id="resume-role" required style="padding: 12px; border-radius: 6px; border: 1px solid #cbd5e0; background: white;">
-                    <option value="" disabled selected>Select Role</option>
-                    <option value="Owner">Owner</option>
-                    <option value="Finder">Finder</option>
-                </select>
-                <button type="submit" style="width: auto; background-color: #4a5568;">Resume Chat</button>
-            </form>
-        </section>
-
-        <section id="police-section" class="report-section" style="display: none;">
-            <button class="back-btn" onclick="showDashboard()">⬅ Back to Dashboard</button>
-            <h2 style="color: #c05621;">🚓 7-Day Protocol: Police Handover</h2>
-            <p style="margin-bottom: 1rem;">Update the system if you surrendered a found item to authorities.</p>
-            <form id="police-dropoff-form" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="police-item-id" placeholder="Item ID Number" required style="width: 200px;">
-                <input type="text" id="police-station-name" placeholder="Station Name (e.g., Central Police)" required style="width: 250px;">
-                <button type="submit" style="width: auto; background-color: #dd6b20;">Log Handover</button>
-            </form>
-        </section>
-
-        <section id="lost-section" class="report-section" style="display: none;">
-            <button class="back-btn" onclick="showDashboard()">⬅ Back to Dashboard</button>
-            <h2>Report a Lost Item</h2>
-            <form id="lost-item-form">
-                <input type="email" id="owner-email" placeholder="Your Email Address (Required for notifications)" required maxlength="100">
-                <input type="text" id="category" placeholder="Category (e.g., Electronics, ID)" required maxlength="50">
-                <input type="text" id="color" placeholder="Color" maxlength="30">
-                <input type="text" id="unique_identifier" placeholder="Serial Number / ID Number (Optional)" maxlength="100">
-                <textarea id="description" placeholder="Detailed description of the item and where it was lost..." required maxlength="500"></textarea>
-                
-                <div style="margin-bottom: 1rem; padding: 15px; background: #f8fafc; border: 1px solid #cbd5e0; border-radius: 6px;">
-                    <label id="captcha-question" style="font-weight: bold; color: #2d3748;">Security Check: Loading...</label>
-                    <input type="text" id="captcha-answer" placeholder="Enter the math answer" required style="margin-bottom: 0; margin-top: 8px;">
-                </div>
-                <button type="submit">Submit Lost Report</button>
-            </form>
-        </section>
-
-        <section id="found-section" class="report-section" style="display: none;">
-            <button class="back-btn" onclick="showDashboard()">⬅ Back to Dashboard</button>
-            <h2>Report a Found Item</h2>
-            <p style="margin-bottom: 1rem; color: #4a5568; font-size: 0.9rem;">
-                <strong>Security Measure:</strong> Please include a "Secret Feature" (e.g., a specific scratch).
+    <main id="main-content" class="flex-grow max-w-5xl mx-auto px-6 py-10 w-full">
+        
+        <!-- SECURE PORTAL BANNER -->
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-8 rounded-r-md shadow-sm flex gap-3 items-start">
+            <i data-lucide="lock" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+            <p class="text-sm text-blue-900 leading-relaxed">
+                <strong>Secure Architecture:</strong> To protect citizen privacy, public feeds are disabled. Items reported here are securely encrypted and cross-referenced by our zero-knowledge matching engine.
             </p>
-            <form id="found-item-form">
-                <input type="email" id="finder-email" placeholder="Your Email (Strictly for notifications)" required maxlength="100">
-                <input type="text" id="found-category" placeholder="Category (e.g., Electronics, Wallet)" required maxlength="50">
-                <input type="text" id="found-color" placeholder="Color" maxlength="30">
-                <textarea id="found-description" placeholder="General description and where you found it..." required maxlength="500"></textarea>
-                <input type="text" id="withheld_feature" placeholder="Secret Feature (e.g., 'Batman sticker')" required maxlength="150">
-                <input type="text" id="found-unique_identifier" placeholder="Serial/ID Number (Optional)" maxlength="100">
-                <button type="submit" style="background-color: #38a169;">Secure Found Item</button>
+        </div>
+
+        <!-- DASHBOARD NAVIGATION -->
+        <div id="dashboard-nav" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group" id="btn-show-lost">
+                <div class="bg-blue-50 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
+                    <i data-lucide="search" class="w-6 h-6 text-blue-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Report Lost Item</h3>
+                <p class="text-sm text-slate-500">Log missing property securely to initiate a system-wide trace.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group" id="btn-show-found">
+                <div class="bg-emerald-50 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition-colors">
+                    <i data-lucide="package" class="w-6 h-6 text-emerald-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Report Found Item</h3>
+                <p class="text-sm text-slate-500">Secure recovered property and notify the rightful owner.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group" id="btn-show-resume">
+                <div class="bg-indigo-50 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition-colors">
+                    <i data-lucide="message-square" class="w-6 h-6 text-indigo-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Resume Claim</h3>
+                <p class="text-sm text-slate-500">Access your active encrypted chat room to arrange handover.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-orange-300 transition-all cursor-pointer group" id="btn-show-police">
+                <div class="bg-orange-50 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-600 transition-colors">
+                    <i data-lucide="building" class="w-6 h-6 text-orange-600 group-hover:text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Police Handover</h3>
+                <p class="text-sm text-slate-500">Comply with the 7-day liability protocol by logging a station dropoff.</p>
+            </div>
+
+        </div>
+
+        <!-- ================= FORMS & SECTIONS ================= -->
+
+        <section id="resume-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-blue-600 font-medium mb-6 flex items-center gap-1 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-3">Resume Active Claim</h2>
+            <form id="resume-claim-form" class="space-y-4">
+                <div>
+                    <input type="text" id="resume-room" placeholder="Enter Serial / System ID Number" required class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <select id="resume-role" required class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                        <option value="" disabled selected>Select Your Role</option>
+                        <option value="Owner">Verified Owner</option>
+                        <option value="Finder">Citizen Finder</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-md transition-colors flex justify-center items-center gap-2">
+                    <i data-lucide="unlock" class="w-4 h-4"></i> Access Secure Chat
+                </button>
             </form>
         </section>
 
-        <section id="chat-portal" class="report-section" style="display: none; border-top: 6px solid #3182ce;">
-            <h2>Secure Claim Interface</h2>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                <button id="resolve-btn" style="background-color: #38a169; width: auto; font-size: 0.9rem; padding: 8px 16px;">✅ Claim Successful</button>
-                <button id="reject-btn" style="background-color: #e53e3e; width: auto; font-size: 0.9rem; padding: 8px 16px;">❌ Not My Item (Cancel)</button>
+        <section id="police-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-blue-600 font-medium mb-6 flex items-center gap-1 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <i data-lucide="shield-alert" class="w-8 h-8 text-orange-600"></i>
+                <h2 class="text-2xl font-bold text-slate-800">7-Day Protocol Handover</h2>
             </div>
-            <div style="background: #e2e8f0; padding: 10px; border-radius: 5px; margin-bottom: 1rem; font-size: 0.9rem;">
-                <strong>System Audio:</strong> Connection established. Please verify the "Secret Feature".
-            </div>
-            <div id="chat-box" class="chat-container">
-                <div class="message-bubble msg-system">Loading secure chat...</div>
-            </div>
-            <form id="chat-form" class="chat-action-container">
-                <input type="text" id="chat-input" placeholder="Type your message..." required maxlength="1000" style="margin-bottom: 0;">
-                <button type="submit" style="width: auto; background-color: #2b6cb0;">Send</button>
+            <p class="text-slate-600 mb-6 text-sm border-b pb-6">Update the system registry if you have surrendered a stale found item to law enforcement authorities.</p>
+            <form id="police-dropoff-form" class="space-y-4">
+                <input type="text" id="police-item-id" placeholder="Item ID / Serial Number" required class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-orange-500">
+                <input type="text" id="police-station-name" placeholder="Receiving Station Name (e.g., Central Police)" required class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-orange-500">
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 rounded-md transition-colors">Log Handover Verification</button>
             </form>
+        </section>
+
+        <section id="lost-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-blue-600 font-medium mb-6 flex items-center gap-1 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-3">Initiate Lost Item Trace</h2>
+            <form id="lost-item-form" class="space-y-4">
+                <input type="email" id="owner-email" placeholder="Your Email Address (Required for alerts)" required maxlength="100" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="category" placeholder="Category (e.g., Electronics)" required maxlength="50" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="color" placeholder="Color" maxlength="30" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <input type="text" id="unique_identifier" placeholder="Serial Number / ID Number (Optional)" maxlength="100" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                <textarea id="description" placeholder="Detailed description of the item and last known location..." required maxlength="500" rows="3" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                
+                <div class="bg-slate-50 p-4 border border-slate-200 rounded-md mt-2">
+                    <label id="captcha-question" class="block text-sm font-bold text-slate-700 mb-2">Security Check: Loading...</label>
+                    <input type="text" id="captcha-answer" placeholder="Enter answer to verify human" required class="w-full border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md transition-colors mt-4">Submit Trace Request</button>
+            </form>
+        </section>
+
+        <section id="found-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-emerald-600 font-medium mb-6 flex items-center gap-1 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Register Found Property</h2>
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-md text-sm mb-6 flex gap-2 items-center">
+                <i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                <p><strong>Security Measure:</strong> Please include a "Secret Feature" that only the true owner would know to prevent fraudulent claims.</p>
+            </div>
+
+            <form id="found-item-form" class="space-y-4">
+                <input type="email" id="finder-email" placeholder="Your Email (Strictly for secure system alerts)" required maxlength="100" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="found-category" placeholder="Category (e.g., Wallet)" required maxlength="50" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" id="found-color" placeholder="Color" maxlength="30" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <textarea id="found-description" placeholder="Public description and general area found..." required maxlength="500" rows="2" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                <input type="text" id="withheld_feature" placeholder="Secret Feature (e.g., 'cracked screen top right')" required maxlength="150" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500">
+                <input type="text" id="found-unique_identifier" placeholder="Serial/ID Number (Optional)" maxlength="100" class="w-full border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-emerald-500">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-md transition-colors mt-4">Secure Property Record</button>
+            </form>
+        </section>
+
+        <section id="chat-portal" class="bg-white rounded-xl shadow-lg border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-8" style="display: none;">
+            
+            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="shield" class="w-5 h-5 text-emerald-400"></i>
+                    <h2 class="text-white font-bold">Secure Claim Interface</h2>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex gap-3 justify-end">
+                <button id="resolve-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 px-4 rounded-md flex gap-2 items-center transition-colors">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> Claim Successful
+                </button>
+                <button id="reject-btn" class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-md flex gap-2 items-center transition-colors">
+                    <i data-lucide="x-octagon" class="w-4 h-4"></i> Not My Item
+                </button>
+            </div>
+
+            <div class="p-4">
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-md text-sm mb-4 flex gap-2">
+                    <i data-lucide="radio" class="w-5 h-5 flex-shrink-0"></i>
+                    <p><strong>System Status:</strong> Connection established. Please verify the "Secret Feature" before arranging a physical meeting.</p>
+                </div>
+                
+                <div id="chat-box" class="h-80 overflow-y-auto p-4 bg-white border border-slate-200 rounded-md flex flex-col gap-3 mb-4">
+                    <div class="message-bubble msg-system text-center text-slate-400 text-sm">Loading secure chat logs...</div>
+                </div>
+
+                <form id="chat-form" class="flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Type a secure message..." required maxlength="1000" class="flex-grow border border-slate-300 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 font-medium rounded-md transition-colors flex items-center gap-2">
+                        <span>Send</span>
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
         </section>
     </main>
 
-    <div id="custom-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" id="modal-box">
-            <h2 id="modal-title">Alert</h2>
-            <p id="modal-message">Message goes here.</p>
-            <button id="modal-action-btn" class="modal-close-btn">Acknowledge</button>
+    <!-- CUSTOM MODAL OVERLAY -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all" id="modal-box">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="bell" class="w-8 h-8 text-blue-600"></i>
+            </div>
+            <h2 id="modal-title" class="text-xl font-bold text-slate-800 mb-2">Alert</h2>
+            <p id="modal-message" class="text-slate-600 mb-6">Message goes here.</p>
+            <button id="modal-action-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-md transition-colors">
+                Acknowledge
+            </button>
         </div>
     </div>
 
+    <!-- Initialize icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    
+    <!-- Your completely untouched Javascript file -->
     <script src="app.js"></script>
 </body>
 </html>
