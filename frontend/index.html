@@ -8,209 +8,216 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Custom sleek scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     </style>
 </head>
-<body class="bg-[#F8F9FA] text-slate-900 font-sans antialiased min-h-screen flex flex-col selection:bg-slate-200">
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-blue-200">
 
-    <!-- GLASSMORPHISM STICKY HEADER -->
-    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-200/80 transition-all">
-        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <i data-lucide="box" class="w-6 h-6 text-slate-900"></i>
-                <h1 class="text-lg font-bold tracking-tight text-slate-900">National Registry.</h1>
+    <!-- HEADER (Dark and Anchored) -->
+    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-6 py-5 flex items-center gap-4">
+            <div class="bg-blue-600 p-2.5 rounded-lg shadow-sm">
+                <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
             </div>
-            <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/60">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                System Operational
+            <div>
+                <!-- FULL ORIGINAL HEADING RESTORED -->
+                <h1 class="text-2xl font-bold tracking-tight">National Lost & Found Registry</h1>
+                <p class="text-sm text-slate-400 font-medium mt-0.5">Secure, confidential routing of recovered belongings.</p>
             </div>
         </div>
     </header>
 
     <main id="main-content" class="flex-grow max-w-5xl mx-auto px-6 py-10 w-full">
         
-        <!-- SLEEK SYSTEM BANNER -->
-        <div class="bg-white border border-slate-200/80 rounded-xl p-4 mb-10 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex items-start gap-3">
-            <i data-lucide="shield-check" class="w-5 h-5 text-slate-900 flex-shrink-0 mt-0.5"></i>
-            <p class="text-sm text-slate-600 leading-relaxed font-medium">
-                <span class="text-slate-900 font-bold">End-to-End Encryption Active.</span> Public feeds are disabled to protect citizen privacy. All submitted records are routed through our zero-knowledge matching architecture.
+        <!-- SECURE BANNER -->
+        <div class="bg-white border-l-4 border-blue-600 p-5 mb-8 rounded-r-xl shadow-sm flex items-start gap-4">
+            <div class="bg-blue-50 p-2 rounded-full flex-shrink-0 mt-0.5">
+                <i data-lucide="lock" class="w-5 h-5 text-blue-700"></i>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
+                <strong class="text-slate-900">Secure Architecture:</strong> To protect citizen privacy, public feeds are disabled. Items reported here are securely encrypted and cross-referenced by our zero-knowledge matching engine.
             </p>
         </div>
 
-        <!-- BENTO BOX DASHBOARD -->
-        <div id="dashboard-nav" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- DASHBOARD NAVIGATION -->
+        <div id="dashboard-nav" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-lost">
-                <div class="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                    <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-400"></i>
+            <!-- LOST CARD -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group" id="btn-show-lost">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-blue-50 p-3 rounded-lg group-hover:bg-blue-600 transition-colors">
+                        <i data-lucide="search" class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-700 transition-colors">Report Lost Item</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-900 transition-colors duration-300">
-                    <i data-lucide="search" class="w-5 h-5 text-slate-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <h3 class="text-base font-bold text-slate-900 mb-1">Trace Lost Item</h3>
-                <p class="text-sm text-slate-500 font-medium">Register missing property to initialize an automated system-wide match.</p>
+                <p class="text-sm text-slate-500">Log missing property securely to initiate a system-wide trace.</p>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-found">
-                <div class="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                    <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-400"></i>
+            <!-- FOUND CARD -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group" id="btn-show-found">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-emerald-50 p-3 rounded-lg group-hover:bg-emerald-600 transition-colors">
+                        <i data-lucide="package" class="w-6 h-6 text-emerald-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">Report Found Item</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-900 transition-colors duration-300">
-                    <i data-lucide="scan-line" class="w-5 h-5 text-slate-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <h3 class="text-base font-bold text-slate-900 mb-1">Secure Found Item</h3>
-                <p class="text-sm text-slate-500 font-medium">Log recovered property into the vault and anonymously alert the owner.</p>
+                <p class="text-sm text-slate-500">Secure recovered property and anonymously notify the rightful owner.</p>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-resume">
-                 <div class="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                    <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-400"></i>
+            <!-- RESUME CARD -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group" id="btn-show-resume">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-indigo-50 p-3 rounded-lg group-hover:bg-indigo-600 transition-colors">
+                        <i data-lucide="message-square" class="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">Resume Claim</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-900 transition-colors duration-300">
-                    <i data-lucide="lock-keyhole" class="w-5 h-5 text-slate-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <h3 class="text-base font-bold text-slate-900 mb-1">Access Claim Portal</h3>
-                <p class="text-sm text-slate-500 font-medium">Re-enter your encrypted room to finalize verification and handover.</p>
+                <p class="text-sm text-slate-500">Access your active encrypted chat room to arrange handover.</p>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-slate-400 hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-police">
-                 <div class="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                    <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-400"></i>
+            <!-- POLICE CARD -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer group" id="btn-show-police">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-orange-50 p-3 rounded-lg group-hover:bg-orange-600 transition-colors">
+                        <i data-lucide="building" class="w-6 h-6 text-orange-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-orange-700 transition-colors">Police Handover</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 group-hover:bg-slate-900 transition-colors duration-300">
-                    <i data-lucide="landmark" class="w-5 h-5 text-slate-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <h3 class="text-base font-bold text-slate-900 mb-1">Police Surrender</h3>
-                <p class="text-sm text-slate-500 font-medium">Log a 7-day protocol drop-off at a registered law enforcement station.</p>
+                <p class="text-sm text-slate-500">Comply with the 7-day liability protocol by logging a station dropoff.</p>
             </div>
 
         </div>
 
         <!-- ================= FORMS & SECTIONS ================= -->
 
-        <section id="resume-section" class="bg-white p-8 rounded-2xl border border-slate-200/80 max-w-xl mx-auto shadow-sm" style="display: none;">
-            <button class="text-xs text-slate-500 hover:text-slate-900 font-bold mb-8 flex items-center gap-1.5 transition-colors uppercase tracking-widest" onclick="showDashboard()">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i> Return
+        <section id="resume-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-indigo-600 font-bold mb-6 flex items-center gap-2 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
-            <h2 class="text-xl font-bold text-slate-900 mb-6">Resume Active Claim</h2>
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <i data-lucide="unlock" class="w-6 h-6 text-indigo-600"></i>
+                <h2 class="text-2xl font-bold text-slate-900">Resume Active Claim</h2>
+            </div>
             <form id="resume-claim-form" class="space-y-4">
-                <input type="text" id="resume-room" placeholder="Enter System ID Number" required class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                <select id="resume-role" required class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium cursor-pointer text-slate-600">
-                    <option value="" disabled selected>Select Authorization Role</option>
+                <input type="text" id="resume-room" placeholder="Enter System ID Number" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                <select id="resume-role" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors cursor-pointer text-slate-700">
+                    <option value="" disabled selected>Select Your Role</option>
                     <option value="Owner">Verified Owner</option>
                     <option value="Finder">Citizen Finder</option>
                 </select>
-                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-medium text-sm py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2">
-                    Authenticate Session
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-sm mt-2">
+                    Access Secure Chat
                 </button>
             </form>
         </section>
 
-        <section id="police-section" class="bg-white p-8 rounded-2xl border border-slate-200/80 max-w-xl mx-auto shadow-sm" style="display: none;">
-            <button class="text-xs text-slate-500 hover:text-slate-900 font-bold mb-8 flex items-center gap-1.5 transition-colors uppercase tracking-widest" onclick="showDashboard()">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i> Return
+        <section id="police-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-orange-600 font-bold mb-6 flex items-center gap-2 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
-            <h2 class="text-xl font-bold text-slate-900 mb-2">Law Enforcement Handover</h2>
-            <p class="text-slate-500 mb-6 text-sm font-medium leading-relaxed">Update the system registry to release your personal liability after surrendering an item.</p>
+            <div class="flex items-center gap-3 mb-2">
+                <i data-lucide="shield-alert" class="w-7 h-7 text-orange-600"></i>
+                <h2 class="text-2xl font-bold text-slate-900">Law Enforcement Handover</h2>
+            </div>
+            <p class="text-slate-500 mb-6 text-sm border-b border-slate-100 pb-4 leading-relaxed">Update the system registry to release your personal liability after surrendering an item to the authorities.</p>
             <form id="police-dropoff-form" class="space-y-4">
-                <input type="text" id="police-item-id" placeholder="Item ID Number" required class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                <input type="text" id="police-station-name" placeholder="Receiving Police Station Name" required class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-medium text-sm py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2">
-                    Verify Handover
+                <input type="text" id="police-item-id" placeholder="Item ID Number" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors">
+                <input type="text" id="police-station-name" placeholder="Receiving Police Station Name" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors">
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-sm mt-2">
+                    Log Handover Verification
                 </button>
             </form>
         </section>
 
-        <section id="lost-section" class="bg-white p-8 rounded-2xl border border-slate-200/80 max-w-2xl mx-auto shadow-sm" style="display: none;">
-            <button class="text-xs text-slate-500 hover:text-slate-900 font-bold mb-8 flex items-center gap-1.5 transition-colors uppercase tracking-widest" onclick="showDashboard()">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i> Return
+        <section id="lost-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-blue-600 font-bold mb-6 flex items-center gap-2 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
-            <h2 class="text-xl font-bold text-slate-900 mb-6">Initialize Trace Request</h2>
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <i data-lucide="search" class="w-6 h-6 text-blue-600"></i>
+                <h2 class="text-2xl font-bold text-slate-900">Initiate Trace Request</h2>
+            </div>
             <form id="lost-item-form" class="space-y-4">
-                <input type="email" id="owner-email" placeholder="Your Email Address (For routing alerts)" required maxlength="100" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
+                <input type="email" id="owner-email" placeholder="Your Email Address (For alert routing)" required maxlength="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="category" placeholder="Category (e.g., Electronics)" required maxlength="50" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                    <input type="text" id="color" placeholder="Color" maxlength="30" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
+                    <input type="text" id="category" placeholder="Category (e.g., Electronics)" required maxlength="50" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    <input type="text" id="color" placeholder="Color" maxlength="30" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                 </div>
-                <input type="text" id="unique_identifier" placeholder="Serial Number / ID Number (Optional)" maxlength="100" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                <textarea id="description" placeholder="Provide a detailed description and last known location..." required maxlength="500" rows="3" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium resize-none"></textarea>
+                <input type="text" id="unique_identifier" placeholder="Serial Number / ID Number (Optional)" maxlength="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                <textarea id="description" placeholder="Detailed description and last known location..." required maxlength="500" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"></textarea>
                 
-                <div class="flex items-center gap-4 bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 mt-2">
-                    <label id="captcha-question" class="text-sm font-bold text-slate-700 whitespace-nowrap">Security Check...</label>
-                    <input type="text" id="captcha-answer" placeholder="Answer" required class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-slate-900 transition-all font-medium">
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mt-2 flex flex-col sm:flex-row items-center gap-4">
+                    <label id="captcha-question" class="text-sm font-bold text-slate-700 w-full sm:w-auto">Security Check...</label>
+                    <input type="text" id="captcha-answer" placeholder="Answer" required class="w-full bg-white border border-slate-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 
-                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-medium text-sm py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] mt-4 flex justify-center items-center gap-2">
-                    Execute Trace
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-sm mt-4">
+                    Submit Trace Request
                 </button>
             </form>
         </section>
 
-        <section id="found-section" class="bg-white p-8 rounded-2xl border border-slate-200/80 max-w-2xl mx-auto shadow-sm" style="display: none;">
-            <button class="text-xs text-slate-500 hover:text-slate-900 font-bold mb-8 flex items-center gap-1.5 transition-colors uppercase tracking-widest" onclick="showDashboard()">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i> Return
+        <section id="found-section" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto" style="display: none;">
+            <button class="text-sm text-slate-500 hover:text-emerald-600 font-bold mb-6 flex items-center gap-2 transition-colors" onclick="showDashboard()">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
-            <h2 class="text-xl font-bold text-slate-900 mb-2">Register Found Property</h2>
-            <div class="mb-6 flex gap-2 items-start text-xs font-medium text-slate-500">
-                <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-                <p>Include a "Secret Feature" (e.g., a specific scratch) that only the true owner would know.</p>
+            <div class="flex items-center gap-3 mb-2">
+                <i data-lucide="package" class="w-6 h-6 text-emerald-600"></i>
+                <h2 class="text-2xl font-bold text-slate-900">Register Found Property</h2>
+            </div>
+            <div class="mb-6 bg-slate-50 border border-slate-200 text-slate-600 p-3 rounded-lg text-sm flex gap-3">
+                <i data-lucide="info" class="w-5 h-5 flex-shrink-0 text-emerald-600"></i>
+                <p>Include a <strong>"Secret Feature"</strong> (e.g., a specific scratch) that only the true owner would know.</p>
             </div>
 
             <form id="found-item-form" class="space-y-4">
-                <input type="email" id="finder-email" placeholder="Your Email (For routing alerts)" required maxlength="100" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
+                <input type="email" id="finder-email" placeholder="Your Email (For routing alerts)" required maxlength="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="found-category" placeholder="Category (e.g., Wallet)" required maxlength="50" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                    <input type="text" id="found-color" placeholder="Color" maxlength="30" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
+                    <input type="text" id="found-category" placeholder="Category (e.g., Wallet)" required maxlength="50" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                    <input type="text" id="found-color" placeholder="Color" maxlength="30" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                 </div>
-                <textarea id="found-description" placeholder="Public description and general area found..." required maxlength="500" rows="2" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium resize-none"></textarea>
+                <textarea id="found-description" placeholder="Public description and general area found..." required maxlength="500" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none"></textarea>
                 
-                <div class="relative">
-                    <input type="text" id="withheld_feature" placeholder="Secret Feature (e.g., 'cracked screen top right')" required maxlength="150" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 pr-10 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                    <i data-lucide="eye-off" class="w-4 h-4 text-slate-400 absolute right-4 top-4"></i>
-                </div>
+                <input type="text" id="withheld_feature" placeholder="Secret Feature (e.g., 'cracked screen top right')" required maxlength="150" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                <input type="text" id="found-unique_identifier" placeholder="Serial/ID Number (Optional)" maxlength="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                 
-                <input type="text" id="found-unique_identifier" placeholder="Serial/ID Number (Optional)" maxlength="100" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium">
-                
-                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-medium text-sm py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] mt-4">
-                    Submit to Vault
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-sm mt-4">
+                    Secure Property Record
                 </button>
             </form>
         </section>
 
-        <section id="chat-portal" class="bg-white rounded-2xl border border-slate-200/80 max-w-2xl mx-auto overflow-hidden mt-4 shadow-xl" style="display: none;">
+        <section id="chat-portal" class="bg-white rounded-xl shadow-md border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-6" style="display: none;">
             
-            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center">
+            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center border-b border-slate-800">
                 <div class="flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <h2 class="text-white text-sm font-bold tracking-wide">Secure Terminal</h2>
+                    <i data-lucide="shield" class="w-5 h-5 text-emerald-400"></i>
+                    <h2 class="text-white font-semibold">Secure Terminal</h2>
                 </div>
                 <div class="flex gap-2">
-                    <button id="resolve-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-1.5 px-3 rounded-md transition-all border border-white/10">
-                        Resolve Match
+                    <button id="resolve-btn" class="bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-bold py-2 px-3 rounded-md transition-colors flex items-center gap-1">
+                        <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Resolve
                     </button>
-                    <button id="reject-btn" class="bg-red-500/20 hover:bg-red-500/40 text-red-100 text-xs font-bold py-1.5 px-3 rounded-md transition-all border border-red-500/20">
-                        Cancel Claim
+                    <button id="reject-btn" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold py-2 px-3 rounded-md transition-colors flex items-center gap-1">
+                        <i data-lucide="x" class="w-4 h-4"></i> Cancel
                     </button>
                 </div>
             </div>
 
             <div class="p-6">
-                <div class="text-xs text-slate-500 mb-6 font-medium bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    Connection established. Verify the "Secret Feature" before arranging physical handover.
+                <div class="text-sm text-slate-600 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200 flex gap-3">
+                    <i data-lucide="radio" class="w-5 h-5 text-blue-500 flex-shrink-0 animate-pulse"></i>
+                    <p>Connection established. Verify the "Secret Feature" before arranging a physical handover.</p>
                 </div>
                 
-                <div id="chat-box" class="h-80 overflow-y-auto p-4 bg-[#F8F9FA] border border-slate-200/60 rounded-xl flex flex-col gap-4 mb-6">
-                    <div class="message-bubble msg-system text-center text-slate-400 text-xs font-medium my-2">Initializing secure logs...</div>
+                <div id="chat-box" class="h-80 overflow-y-auto p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col gap-3 mb-6">
+                    <div class="message-bubble msg-system text-center text-slate-400 text-sm my-2">Initializing secure logs...</div>
                 </div>
 
                 <form id="chat-form" class="flex gap-2">
-                    <input type="text" id="chat-input" placeholder="Enter message..." required maxlength="1000" class="flex-grow bg-slate-50/50 border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-slate-900 transition-all font-medium">
-                    <button type="submit" class="bg-slate-900 hover:bg-black text-white px-5 rounded-xl transition-all shadow-md active:scale-[0.98]">
-                        <i data-lucide="send" class="w-4 h-4"></i>
+                    <input type="text" id="chat-input" placeholder="Type message..." required maxlength="1000" class="flex-grow bg-white border border-slate-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-lg transition-colors font-bold shadow-sm">
+                        Send
                     </button>
                 </form>
             </div>
@@ -218,11 +225,11 @@
     </main>
 
     <!-- CUSTOM MODAL OVERLAY -->
-    <div id="custom-modal" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-200" style="display: none;">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center border border-slate-200" id="modal-box">
-            <h2 id="modal-title" class="text-lg font-bold text-slate-900 mb-2">Notification</h2>
-            <p id="modal-message" class="text-slate-500 text-sm mb-6 font-medium leading-relaxed">Message goes here.</p>
-            <button id="modal-action-btn" class="w-full bg-slate-900 hover:bg-black text-white text-sm font-medium py-3 rounded-xl transition-all active:scale-[0.98]">
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity" style="display: none;">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center" id="modal-box">
+            <h2 id="modal-title" class="text-xl font-bold text-slate-900 mb-2">Notification</h2>
+            <p id="modal-message" class="text-slate-600 mb-6">Message goes here.</p>
+            <button id="modal-action-btn" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-lg transition-colors">
                 Acknowledge
             </button>
         </div>
