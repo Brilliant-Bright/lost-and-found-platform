@@ -147,7 +147,7 @@
         <!-- ================= FORMS & SECTIONS ================= -->
 
         <!-- SECURE OTP RESUME SECTION -->
-        <section id="resume-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
+        <section id="resume-section" class="hidden bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in">
             <button class="text-sm text-slate-500 hover:text-indigo-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
@@ -180,7 +180,7 @@
         </section>
 
         <!-- POLICE SECTION -->
-        <section id="police-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
+        <section id="police-section" class="hidden bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in">
             <button class="text-sm text-slate-500 hover:text-orange-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
@@ -205,7 +205,7 @@
         </section>
 
         <!-- LOST SECTION -->
-        <section id="lost-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
+        <section id="lost-section" class="hidden bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in">
             <button class="text-sm text-slate-500 hover:text-blue-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
@@ -249,7 +249,7 @@
         </section>
 
         <!-- FOUND SECTION -->
-        <section id="found-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
+        <section id="found-section" class="hidden bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in">
             <button class="text-sm text-slate-500 hover:text-emerald-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
@@ -297,7 +297,7 @@
         </section>
 
         <!-- CHAT PORTAL -->
-        <section id="chat-portal" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-6 fade-in" style="display: none;">
+        <section id="chat-portal" class="hidden bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-6 fade-in">
             <div class="bg-slate-900 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b-4 border-amber-500">
                 <div class="flex items-center gap-3">
                     <i data-lucide="lock" class="w-5 h-5 text-amber-500"></i>
@@ -328,7 +328,9 @@
 
                 <form id="chat-form" class="flex gap-3">
                     <input type="text" id="chat-input" placeholder="Type a secure message..." required maxlength="1000" class="flex-grow bg-white border border-slate-200 rounded-xl p-3.5 outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 active:scale-[0.95] text-white px-6 rounded-xl transition-all font-semibold shadow-md flex items-center justify-center">
+                    <button type="submit" aria-label="Send secure message" title="Send message" class="bg-blue-600 hover:bg-blue-700 active:scale-[0.95] text-white px-6 rounded-xl transition-all font-semibold shadow-md flex items-center justify-center">
+    <i data-lucide="send" class="w-5 h-5"></i>
+</button>
                         <i data-lucide="send" class="w-5 h-5"></i>
                     </button>
                 </form>
@@ -337,7 +339,7 @@
     </main>
 
     <!-- CUSTOM MODAL OVERLAY -->
-    <div id="custom-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity" style="display: none;">
+    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center transform transition-all scale-100 border-t-4 border-amber-500" id="modal-box">
             <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-slate-900 mb-5 shadow-lg border border-slate-700">
                 <i data-lucide="shield-check" class="h-7 w-7 text-amber-500"></i>

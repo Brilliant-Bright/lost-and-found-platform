@@ -32,13 +32,18 @@ function generateCaptcha() {
 
 // --- DASHBOARD NAVIGATION LOGIC ---
 function hideAllSections() {
-    document.getElementById("dashboard-nav").style.display = "none";
-    document.getElementById("how-it-works").style.display = "none";
-    document.getElementById("lost-section").style.display = "none";
-    document.getElementById("found-section").style.display = "none";
-    document.getElementById("resume-section").style.display = "none";
-    document.getElementById("police-section").style.display = "none";
-    document.getElementById("chat-portal").style.display = "none";
+    const sections = [
+        "dashboard-nav", "how-it-works", "lost-section", 
+        "found-section", "resume-section", "police-section", "chat-portal"
+    ];
+    
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = ""; // Clear any old inline styles
+            el.classList.add("hidden"); // Use the Tailwind class
+        }
+    });
 }
 
 function showDashboard() {
@@ -49,14 +54,15 @@ function showDashboard() {
     }
     
     hideAllSections();
-    document.getElementById("how-it-works").style.display = "block";
-    document.getElementById("dashboard-nav").style.display = "grid";
+    document.getElementById("how-it-works").classList.remove("hidden");
+    document.getElementById("dashboard-nav").classList.remove("hidden");
+    document.getElementById("dashboard-nav").style.display = "grid"; 
 }
 
-document.getElementById("btn-show-lost").addEventListener("click", () => { hideAllSections(); document.getElementById("lost-section").style.display = "block"; });
-document.getElementById("btn-show-found").addEventListener("click", () => { hideAllSections(); document.getElementById("found-section").style.display = "block"; });
-document.getElementById("btn-show-resume").addEventListener("click", () => { hideAllSections(); document.getElementById("resume-section").style.display = "block"; });
-document.getElementById("btn-show-police").addEventListener("click", () => { hideAllSections(); document.getElementById("police-section").style.display = "block"; });
+document.getElementById("btn-show-lost").addEventListener("click", () => { hideAllSections(); document.getElementById("lost-section").classList.remove("hidden"); });
+document.getElementById("btn-show-found").addEventListener("click", () => { hideAllSections(); document.getElementById("found-section").classList.remove("hidden"); });
+document.getElementById("btn-show-resume").addEventListener("click", () => { hideAllSections(); document.getElementById("resume-section").classList.remove("hidden"); });
+document.getElementById("btn-show-police").addEventListener("click", () => { hideAllSections(); document.getElementById("police-section").classList.remove("hidden"); });
 
 function showModal(title, message, type, roomId = null, role = null) {
     const modal = document.getElementById("custom-modal");
@@ -76,10 +82,19 @@ function showModal(title, message, type, roomId = null, role = null) {
     }
     document.getElementById("modal-title").innerText = title;
     document.getElementById("modal-message").innerHTML = message;
+    
+    modal.style.display = ""; 
+    modal.classList.remove("hidden");
     modal.style.display = "flex"; 
 }
 
-function closeModal() { document.getElementById("custom-modal").style.display = "none"; }
+function closeModal() { 
+    const modal = document.getElementById("custom-modal");
+    if (modal) {
+        modal.style.display = ""; 
+        modal.classList.add("hidden"); 
+    }
+}
 
 // --- MAGIC LINK AUTHENTICATION ---
 async function verifyMagicLink(room, token) {
@@ -107,7 +122,9 @@ function openSecureChat(roomId, role) {
     currentRole = role;
 
     hideAllSections(); 
-    document.getElementById("chat-portal").style.display = "block";
+    const chatPortal = document.getElementById("chat-portal");
+    chatPortal.classList.remove("hidden");
+    chatPortal.style.display = "block";
 
     const chatBox = document.getElementById("chat-box");
     chatBox.innerHTML = '<div class="text-center text-slate-400 text-xs font-medium my-2 uppercase tracking-widest">Match Confirmed. You are connected as the ' + currentRole + '.</div>';
