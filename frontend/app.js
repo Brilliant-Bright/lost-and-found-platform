@@ -3,15 +3,16 @@ const BACKEND_URL = "https://national-registry-api.onrender.com";
 
 let currentRoom = "";
 let currentRole = ""; 
-let chatInterval = null;
 let expectedCaptchaAnswer = 0;
-let isOtpStep = false; // Tracks if the user is currently entering an OTP
+let isOtpStep = false; 
+
+// --- SECURE CHAT LOGIC (WEBSOCKETS) ---
+let ws = null; 
 
 window.addEventListener('DOMContentLoaded', (event) => {
     generateCaptcha(); 
     
     // --- MAGIC LINK INTERCEPTOR ---
-    // If the URL contains ?room=SYS-123&token=abc, verify it immediately
     const urlParams = new URLSearchParams(window.location.search);
     const roomParam = urlParams.get('room');
     const tokenParam = urlParams.get('token');
@@ -41,17 +42,21 @@ function hideAllSections() {
 }
 
 function showDashboard() {
+    // Gracefully close WebSocket if returning to dashboard
+    if (ws) {
+        ws.close();
+        ws = null;
+    }
+    
     hideAllSections();
     document.getElementById("how-it-works").style.display = "block";
     document.getElementById("dashboard-nav").style.display = "grid";
 }
 
-// Ensure the UI routes perfectly
 document.getElementById("btn-show-lost").addEventListener("click", () => { hideAllSections(); document.getElementById("lost-section").style.display = "block"; });
 document.getElementById("btn-show-found").addEventListener("click", () => { hideAllSections(); document.getElementById("found-section").style.display = "block"; });
 document.getElementById("btn-show-resume").addEventListener("click", () => { hideAllSections(); document.getElementById("resume-section").style.display = "block"; });
 document.getElementById("btn-show-police").addEventListener("click", () => { hideAllSections(); document.getElementById("police-section").style.display = "block"; });
-
 
 function showModal(title, message, type, roomId = null, role = null) {
     const modal = document.getElementById("custom-modal");
@@ -96,7 +101,7 @@ async function verifyMagicLink(room, token) {
     }
 }
 
-// --- SECURE CHAT LOGIC ---
+// --- SECURE WEBSOCKET CHAT ENGINE ---
 function openSecureChat(roomId, role) {
     currentRoom = roomId;
     currentRole = role;
@@ -104,32 +109,41 @@ function openSecureChat(roomId, role) {
     hideAllSections(); 
     document.getElementById("chat-portal").style.display = "block";
 
-    fetchMessages(); 
-    chatInterval = setInterval(fetchMessages, 2000); 
+    const chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML = '<div class="text-center text-slate-400 text-xs font-medium my-2 uppercase tracking-widest">Match Confirmed. You are connected as the ' + currentRole + '.</div>';
+
+    fetchHistoricalMessages(); 
+
+    // Convert https:// to wss:// for secure web sockets
+    const wsUrl = BACKEND_URL.replace(/^http/, 'ws') + `/ws/chat/${currentRoom}/${currentRole}`;
+    ws = new WebSocket(wsUrl);
+
+    ws.onmessage = function(event) {
+        const msg = JSON.parse(event.data);
+        appendMessageToUI(msg.sender, msg.message);
+        
+        if (msg.sender !== currentRole) {
+            fetch(`${BACKEND_URL}/api/chat/read`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ room_id: currentRoom, role: currentRole })
+            });
+        }
+    };
+
+    ws.onclose = function() {
+        console.log("Secure connection closed.");
+    };
 }
 
-async function fetchMessages() {
+async function fetchHistoricalMessages() {
     if (!currentRoom) return;
     try {
         const response = await fetch(`${BACKEND_URL}/api/chat/${currentRoom}`);
         const result = await response.json();
-        const chatBox = document.getElementById("chat-box");
-        
-        chatBox.innerHTML = '<div class="text-center text-slate-400 text-xs font-medium my-2 uppercase tracking-widest">Match Confirmed. You are connected as the ' + currentRole + '.</div>';
         
         if (result.data) {
-            result.data.forEach(msg => {
-                const bubble = document.createElement("div");
-                if (msg.sender === currentRole) {
-                    bubble.className = "self-end bg-blue-600 text-white py-2 px-4 rounded-bl-xl rounded-tl-xl rounded-tr-xl max-w-[80%] text-sm shadow-sm";
-                } else {
-                    bubble.className = "self-start bg-slate-200 text-slate-800 py-2 px-4 rounded-br-xl rounded-tr-xl rounded-tl-xl max-w-[80%] text-sm shadow-sm";
-                }
-                bubble.innerText = msg.sender + ": " + msg.message;
-                chatBox.appendChild(bubble);
-            });
+            result.data.forEach(msg => appendMessageToUI(msg.sender, msg.message));
         }
-        chatBox.scrollTop = chatBox.scrollHeight; 
 
         await fetch(`${BACKEND_URL}/api/chat/read`, {
             method: "POST", headers: { "Content-Type": "application/json" },
@@ -139,6 +153,33 @@ async function fetchMessages() {
     } catch (error) { console.error("Chat sync error", error); }
 }
 
+function appendMessageToUI(sender, messageText) {
+    const chatBox = document.getElementById("chat-box");
+    const bubble = document.createElement("div");
+    
+    if (sender === currentRole) {
+        bubble.className = "self-end bg-blue-600 text-white py-2 px-4 rounded-bl-xl rounded-tl-xl rounded-tr-xl max-w-[80%] text-sm shadow-sm mt-2";
+    } else {
+        bubble.className = "self-start bg-slate-200 text-slate-800 py-2 px-4 rounded-br-xl rounded-tr-xl rounded-tl-xl max-w-[80%] text-sm shadow-sm mt-2";
+    }
+    
+    bubble.innerText = sender + ": " + messageText;
+    chatBox.appendChild(bubble);
+    chatBox.scrollTop = chatBox.scrollHeight; 
+}
+
+// --- CHAT FORM SUBMISSION (VIA WEBSOCKET) ---
+document.getElementById("chat-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const input = document.getElementById("chat-input");
+    const messageText = input.value.trim();
+    
+    if (messageText !== "" && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(messageText);
+        input.value = ""; 
+    }
+});
+
 // --- DYNAMIC OTP RESUME CLAIM FLOW ---
 document.getElementById("resume-claim-form").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -147,7 +188,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
     const submitBtn = event.target.querySelector('button');
 
     if (!isOtpStep) {
-        // STEP 1: REQUEST OTP
         submitBtn.innerHTML = 'Sending Code... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>';
         lucide.createIcons();
         
@@ -160,7 +200,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
             const data = await response.json();
             
             if (response.ok) {
-                // Success: Transform the form into an OTP Input
                 isOtpStep = true;
                 document.getElementById("resume-email").parentElement.style.display = 'none'; 
                 document.getElementById("resume-room").parentElement.style.display = 'none'; 
@@ -187,7 +226,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
             lucide.createIcons();
         }
     } else {
-        // STEP 2: VERIFY OTP
         const otp = document.getElementById("resume-otp").value.trim();
         submitBtn.innerHTML = 'Verifying... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>';
         lucide.createIcons();
@@ -201,7 +239,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
             const data = await response.json();
             
             if (response.ok) {
-                // Success: Reset form state and enter chat!
                 isOtpStep = false;
                 document.getElementById("otp-container").remove();
                 document.getElementById("resume-email").parentElement.style.display = 'block';
@@ -210,7 +247,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
                 lucide.createIcons();
                 this.reset();
                 
-                // Backend automatically tells us if they are the Owner or Finder based on email
                 openSecureChat(room, data.role); 
             } else {
                 showModal("Verification Failed", data.detail || "Invalid or expired code.", "error");
@@ -222,31 +258,6 @@ document.getElementById("resume-claim-form").addEventListener("submit", async fu
             submitBtn.innerHTML = 'Verify Code & Enter Chat <i data-lucide="arrow-right" class="w-4 h-4"></i>';
             lucide.createIcons();
         }
-    }
-});
-
-// --- CHAT FORM SUBMISSION ---
-document.getElementById("chat-form").addEventListener("submit", async function(event) {
-    event.preventDefault();
-    const input = document.getElementById("chat-input");
-    const chatBox = document.getElementById("chat-box");
-    const messageText = input.value.trim();
-    
-    if (messageText !== "") {
-        const bubble = document.createElement("div");
-        bubble.className = "self-end bg-blue-600 text-white py-2 px-4 rounded-bl-xl rounded-tl-xl rounded-tr-xl max-w-[80%] text-sm shadow-sm mt-2";
-        bubble.innerText = currentRole + ": " + messageText;
-        chatBox.appendChild(bubble);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        input.value = ""; 
-
-        const payload = { room_id: currentRoom, sender: currentRole, message: messageText };
-        try {
-            await fetch(`${BACKEND_URL}/api/chat`, {
-                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-            });
-        } catch (error) {}
     }
 });
 
@@ -353,7 +364,10 @@ async function endChatAndBurnBridge(reason) {
             });
 
             if (response.ok) {
-                clearInterval(chatInterval); 
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
                 alert(`Success: Chat securely erased. The connection has been destroyed.`);
                 window.location.reload(); 
             } else {
