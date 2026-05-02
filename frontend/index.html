@@ -18,7 +18,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-amber-200 relative z-0">
 
-    <!-- PREMIUM AMBIENT BACKGROUND (Soft Mesh Gradient) -->
+    <!-- PREMIUM AMBIENT BACKGROUND -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
         <div class="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-b from-blue-100/50 to-transparent blur-3xl opacity-70"></div>
         <div class="absolute -bottom-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-gradient-to-t from-amber-100/40 to-transparent blur-3xl opacity-70"></div>
@@ -53,11 +53,10 @@
             </div>
         </div>
 
-        <!-- DASHBOARD NAVIGATION (Moved Above the Fold) -->
+        <!-- DASHBOARD NAVIGATION -->
         <div id="dashboard-nav" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             
-            <!-- LOST CARD -->
-            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-blue-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('lost-section')">
+            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-blue-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-lost">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-blue-600 transition-all duration-300 shadow-sm">
@@ -68,8 +67,7 @@
                 <p class="text-sm text-slate-500 leading-relaxed pl-1">Log missing property securely to initiate a system-wide trace and alert network.</p>
             </div>
 
-            <!-- FOUND CARD -->
-            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-emerald-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('found-section')">
+            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-emerald-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-found">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-emerald-600 transition-all duration-300 shadow-sm">
@@ -80,8 +78,7 @@
                 <p class="text-sm text-slate-500 leading-relaxed pl-1">Secure recovered property and anonymously notify the rightful owner via our system.</p>
             </div>
 
-            <!-- RESUME CARD -->
-            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-indigo-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('resume-section')">
+            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-indigo-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-resume">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-indigo-600 transition-all duration-300 shadow-sm">
@@ -92,8 +89,7 @@
                 <p class="text-sm text-slate-500 leading-relaxed pl-1">Access your active encrypted chat room to arrange physical handover and verification.</p>
             </div>
 
-            <!-- POLICE CARD -->
-            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-amber-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('police-section')">
+            <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-amber-300 hover:bg-white hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-police">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-amber-500 transition-all duration-300 shadow-sm">
@@ -106,35 +102,48 @@
 
         </div>
 
-        <!-- ZERO LEARNING CURVE: HOW IT WORKS (Moved below buttons) -->
+        <!-- ZERO LEARNING CURVE: 4-STEP PROTOCOL -->
         <div id="how-it-works" class="px-2 pt-6 border-t border-slate-200/60">
             <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                 <i data-lucide="help-circle" class="w-4 h-4"></i> Understanding The Protocol
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                <!-- Connecting Line -->
                 <div class="hidden md:block absolute top-4 left-10 right-10 h-[1px] bg-slate-200/80 z-0"></div>
 
+                <!-- Step 1 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-white text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-slate-100 shadow-sm text-sm">1</div>
                     <div>
                         <h4 class="font-bold text-slate-800 text-sm">Log an Item</h4>
-                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Report what you lost or found. Found items require a "Secret Feature" for security.</p>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Report missing items or register finds using a "Secret Feature" for verification.</p>
                     </div>
                 </div>
                 
+                <!-- Step 2 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-white text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-slate-100 shadow-sm text-sm">2</div>
                     <div>
                         <h4 class="font-bold text-slate-800 text-sm">System Traces</h4>
-                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Our engine cross-references databases. Both parties receive a secure email link upon a match.</p>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Our engine cross-references databases. Both parties receive an encrypted email link upon match.</p>
                     </div>
                 </div>
                 
+                <!-- Step 3 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
-                    <div class="bg-amber-50 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-amber-100 shadow-sm text-sm">3</div>
+                    <div class="bg-emerald-50 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-emerald-100 shadow-sm text-sm">3</div>
                     <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Secure Connection</h4>
-                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Use the Resume Claim portal to verify the secret feature and arrange a safe physical handover.</p>
+                        <h4 class="font-bold text-slate-800 text-sm">Secure Chat</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Use the Resume Claim portal to verify the item safely before a physical handover.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 (NEW: Police Handover) -->
+                <div class="relative z-10 flex flex-col gap-2 items-start">
+                    <div class="bg-amber-50 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-amber-200 shadow-sm text-sm">4</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">Liability Release</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">If unclaimed after 7 days, surrender the item to authorities and log the drop-off here.</p>
                     </div>
                 </div>
             </div>
@@ -142,7 +151,6 @@
 
         <!-- ================= FORMS & SECTIONS ================= -->
 
-        <!-- RESUME SECTION -->
         <section id="resume-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-indigo-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -170,7 +178,6 @@
             </form>
         </section>
 
-        <!-- POLICE SECTION -->
         <section id="police-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-orange-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -195,7 +202,6 @@
             </form>
         </section>
 
-        <!-- LOST SECTION -->
         <section id="lost-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-blue-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -239,7 +245,6 @@
             </form>
         </section>
 
-        <!-- FOUND SECTION -->
         <section id="found-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-emerald-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -287,7 +292,6 @@
             </form>
         </section>
 
-        <!-- CHAT PORTAL -->
         <section id="chat-portal" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-6 fade-in" style="display: none;">
             <div class="bg-slate-900 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b-4 border-amber-500">
                 <div class="flex items-center gap-3">
@@ -341,26 +345,24 @@
     <script>
         lucide.createIcons();
 
-        function hideAllSections() {
-            document.getElementById('dashboard-nav').style.display = 'none';
-            document.getElementById('how-it-works').style.display = 'none';
-            ['resume-section', 'police-section', 'lost-section', 'found-section', 'chat-portal'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
-        }
-
-        function showSection(sectionId) {
-            hideAllSections();
-            document.getElementById(sectionId).style.display = 'block';
-            setTimeout(() => lucide.createIcons(), 50);
-        }
-
-        function showDashboard() {
-            hideAllSections();
-            document.getElementById('how-it-works').style.display = 'block';
-            document.getElementById('dashboard-nav').style.display = 'grid';
-        }
+        // -------------------------------------------------------------
+        // AUTOMATIC UI SYNC SCRIPT (Tripwire for app.js)
+        // -------------------------------------------------------------
+        const dashboard = document.getElementById('dashboard-nav');
+        const howItWorks = document.getElementById('how-it-works');
+        
+        // This watches your dashboard. If app.js hides the dashboard, it instantly hides the guide.
+        const observer = new MutationObserver(() => {
+            if (dashboard.style.display === 'none' || window.getComputedStyle(dashboard).display === 'none') {
+                howItWorks.style.display = 'none';
+            } else {
+                howItWorks.style.display = 'block';
+            }
+        });
+        
+        observer.observe(dashboard, { attributes: true, attributeFilter: ['style', 'class'] });
     </script>
+    
     <script src="app.js"></script>
 </body>
 </html>
