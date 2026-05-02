@@ -108,10 +108,8 @@
                 <i data-lucide="help-circle" class="w-4 h-4"></i> Understanding The Protocol
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-                <!-- Connecting Line -->
                 <div class="hidden md:block absolute top-4 left-10 right-10 h-[1px] bg-slate-200/80 z-0"></div>
 
-                <!-- Step 1 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-white text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-slate-100 shadow-sm text-sm">1</div>
                     <div>
@@ -120,7 +118,6 @@
                     </div>
                 </div>
                 
-                <!-- Step 2 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-white text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-slate-100 shadow-sm text-sm">2</div>
                     <div>
@@ -129,7 +126,6 @@
                     </div>
                 </div>
                 
-                <!-- Step 3 -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-emerald-50 text-emerald-700 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-emerald-100 shadow-sm text-sm">3</div>
                     <div>
@@ -138,7 +134,6 @@
                     </div>
                 </div>
 
-                <!-- Step 4 (NEW: Police Handover) -->
                 <div class="relative z-10 flex flex-col gap-2 items-start">
                     <div class="bg-amber-50 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-amber-200 shadow-sm text-sm">4</div>
                     <div>
@@ -151,33 +146,40 @@
 
         <!-- ================= FORMS & SECTIONS ================= -->
 
+        <!-- SECURE OTP RESUME SECTION -->
         <section id="resume-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-indigo-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
             </button>
-            <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-5">
-                <div class="bg-indigo-50 p-2 rounded-lg"><i data-lucide="unlock" class="w-6 h-6 text-indigo-600"></i></div>
-                <h2 class="text-2xl font-bold text-slate-900">Resume Active Claim</h2>
+            <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-5">
+                <div class="bg-indigo-50 p-2 rounded-lg"><i data-lucide="shield-check" class="w-6 h-6 text-indigo-600"></i></div>
+                <h2 class="text-2xl font-bold text-slate-900">Secure Authentication</h2>
             </div>
+            
+            <div class="mb-6 bg-blue-50/50 border border-blue-100 text-blue-800 p-4 rounded-xl text-sm flex gap-3 shadow-sm">
+                <i data-lucide="info" class="w-5 h-5 flex-shrink-0 text-blue-600 mt-0.5"></i>
+                <p>To prevent unauthorized access, you must verify your identity using the email address you registered with. Your role will be automatically detected.</p>
+            </div>
+
             <form id="resume-claim-form" class="space-y-5">
+                <!-- HIDDEN INPUT: Keeps app.js from crashing since it expects the resume-role field -->
+                <input type="hidden" id="resume-role" value="Auto-Detected">
+                
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">System ID Number</label>
                     <input type="text" id="resume-room" placeholder="e.g., SYS-9824" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Select Role</label>
-                    <select id="resume-role" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer text-slate-700 appearance-none">
-                        <option value="" disabled selected>Choose your registry role...</option>
-                        <option value="Owner">Verified Owner</option>
-                        <option value="Finder">Citizen Finder</option>
-                    </select>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Registered Email Address</label>
+                    <input type="email" id="resume-email" placeholder="Your secure email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold py-4 rounded-xl transition-all shadow-md hover:shadow-lg mt-4 flex justify-center items-center gap-2">
-                    Access Secure Chat <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    Request Secure Access Code <i data-lucide="mail-check" class="w-4 h-4"></i>
                 </button>
             </form>
         </section>
 
+        <!-- POLICE SECTION -->
         <section id="police-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-orange-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -202,6 +204,7 @@
             </form>
         </section>
 
+        <!-- LOST SECTION -->
         <section id="lost-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-blue-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -245,6 +248,7 @@
             </form>
         </section>
 
+        <!-- FOUND SECTION -->
         <section id="found-section" class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-200 max-w-2xl mx-auto fade-in" style="display: none;">
             <button class="text-sm text-slate-500 hover:text-emerald-600 font-semibold mb-8 flex items-center gap-2 transition-colors" onclick="showDashboard()">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -292,6 +296,7 @@
             </form>
         </section>
 
+        <!-- CHAT PORTAL -->
         <section id="chat-portal" class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 max-w-2xl mx-auto overflow-hidden mt-6 fade-in" style="display: none;">
             <div class="bg-slate-900 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b-4 border-amber-500">
                 <div class="flex items-center gap-3">
@@ -299,6 +304,9 @@
                     <h2 class="text-white font-semibold tracking-wide uppercase text-sm">Secure Terminal</h2>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto">
+                    <button id="return-btn" onclick="showDashboard()" class="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-2.5 px-4 rounded-lg transition-colors flex justify-center items-center gap-1.5 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-4 h-4 text-slate-300"></i> Dashboard
+                    </button>
                     <button id="resolve-btn" class="flex-1 sm:flex-none bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold py-2.5 px-4 rounded-lg transition-colors flex justify-center items-center gap-1.5 shadow-sm">
                         <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Resolve
                     </button>
@@ -346,12 +354,11 @@
         lucide.createIcons();
 
         // -------------------------------------------------------------
-        // AUTOMATIC UI SYNC SCRIPT (Tripwire for app.js)
+        // AUTOMATIC UI SYNC SCRIPT
         // -------------------------------------------------------------
         const dashboard = document.getElementById('dashboard-nav');
         const howItWorks = document.getElementById('how-it-works');
         
-        // This watches your dashboard. If app.js hides the dashboard, it instantly hides the guide.
         const observer = new MutationObserver(() => {
             if (dashboard.style.display === 'none' || window.getComputedStyle(dashboard).display === 'none') {
                 howItWorks.style.display = 'none';
@@ -361,6 +368,15 @@
         });
         
         observer.observe(dashboard, { attributes: true, attributeFilter: ['style', 'class'] });
+
+        function showDashboard() {
+            document.getElementById('chat-portal').style.display = 'none';
+            document.getElementById('resume-section').style.display = 'none';
+            document.getElementById('police-section').style.display = 'none';
+            document.getElementById('lost-section').style.display = 'none';
+            document.getElementById('found-section').style.display = 'none';
+            dashboard.style.display = 'grid';
+        }
     </script>
     
     <script src="app.js"></script>
