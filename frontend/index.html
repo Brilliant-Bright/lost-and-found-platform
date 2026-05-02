@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Lost & Found Registry</title>
+    <title>Lost & Found Registry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
@@ -31,8 +31,9 @@
                 <i data-lucide="landmark" class="w-7 h-7 text-slate-900"></i>
             </div>
             <div>
-                <h1 class="text-xl md:text-2xl font-bold text-white uppercase tracking-wider">National Registry</h1>
-                <p class="text-xs md:text-sm text-amber-500/90 font-medium mt-0.5 tracking-wide">Lost & Found Secure Routing System</p>
+                <!-- UPDATED HEADING -->
+                <h1 class="text-xl md:text-2xl font-bold text-white uppercase tracking-wider">Lost & Found Registry</h1>
+                <p class="text-xs md:text-sm text-amber-500/90 font-medium mt-0.5 tracking-wide">Secure Routing System</p>
             </div>
         </div>
     </header>
@@ -40,7 +41,7 @@
     <main id="main-content" class="flex-grow max-w-5xl mx-auto px-6 py-10 w-full">
         
         <!-- SECURE BANNER -->
-        <div class="bg-slate-900 border border-slate-800 p-6 mb-10 rounded-2xl shadow-lg flex items-start gap-5 relative overflow-hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 mb-8 rounded-2xl shadow-lg flex items-start gap-5 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-20 -translate-y-20 pointer-events-none"></div>
             <div class="bg-slate-800 border border-slate-700 p-2.5 rounded-xl flex-shrink-0 mt-0.5 z-10">
                 <i data-lucide="shield" class="w-6 h-6 text-amber-500"></i>
@@ -55,11 +56,41 @@
             </div>
         </div>
 
+        <!-- ZERO LEARNING CURVE: HOW IT WORKS -->
+        <div id="how-it-works" class="mb-10">
+            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <i data-lucide="help-circle" class="w-4 h-4"></i> How The System Works
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                    <div class="bg-slate-100 text-slate-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold flex-shrink-0">1</div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Log an Item</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Report what you lost or found. Found items require a "Secret Feature" for security.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                    <div class="bg-slate-100 text-slate-600 w-8 h-8 rounded-lg flex items-center justify-center font-bold flex-shrink-0">2</div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">System Traces</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Our engine cross-references databases. Both parties receive a secure email link upon a match.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm flex gap-4 items-start">
+                    <div class="bg-amber-100 text-amber-700 w-8 h-8 rounded-lg flex items-center justify-center font-bold flex-shrink-0">3</div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Secure Connection</h4>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Use the Resume Claim portal to verify the secret feature and arrange a safe physical handover.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- DASHBOARD NAVIGATION -->
         <div id="dashboard-nav" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <!-- LOST CARD -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-lost">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('lost-section')">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-blue-600 transition-all duration-300 shadow-sm">
@@ -71,7 +102,7 @@
             </div>
 
             <!-- FOUND CARD -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-found">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('found-section')">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-emerald-600 transition-all duration-300 shadow-sm">
@@ -83,7 +114,7 @@
             </div>
 
             <!-- RESUME CARD -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-resume">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('resume-section')">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-indigo-600 transition-all duration-300 shadow-sm">
@@ -95,7 +126,7 @@
             </div>
 
             <!-- POLICE CARD -->
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" id="btn-show-police">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden" onclick="showSection('police-section')">
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500 transform origin-bottom scale-y-75 group-hover:scale-y-100 transition-transform duration-300"></div>
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl group-hover:bg-amber-500 transition-all duration-300 shadow-sm">
@@ -306,10 +337,33 @@
         </div>
     </div>
 
-    <!-- Initialize Icons and Inject App Logic -->
     <script>
+        // Initialize Icons
         lucide.createIcons();
+
+        // Basic UI Routing Script explicitly for transitioning between sections
+        // It hides the dashboard and shows the requested section.
+        function hideAllSections() {
+            document.getElementById('dashboard-nav').style.display = 'none';
+            document.getElementById('how-it-works').style.display = 'none';
+            ['resume-section', 'police-section', 'lost-section', 'found-section', 'chat-portal'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+
+        function showSection(sectionId) {
+            hideAllSections();
+            document.getElementById(sectionId).style.display = 'block';
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+
+        function showDashboard() {
+            hideAllSections();
+            document.getElementById('how-it-works').style.display = 'block';
+            document.getElementById('dashboard-nav').style.display = 'grid';
+        }
     </script>
+    <!-- Your main application logic is loaded here -->
     <script src="app.js"></script>
 </body>
 </html>
