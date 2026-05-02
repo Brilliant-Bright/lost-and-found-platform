@@ -1,18 +1,23 @@
+// --- SECURE ENTERPRISE CONFIGURATION ---
 const BACKEND_URL = "https://national-registry-api.onrender.com";
 
 let currentRoom = "";
 let currentRole = ""; 
 let chatInterval = null;
 let expectedCaptchaAnswer = 0;
+let isOtpStep = false; // Tracks if the user is currently entering an OTP
 
 window.addEventListener('DOMContentLoaded', (event) => {
     generateCaptcha(); 
+    
+    // --- MAGIC LINK INTERCEPTOR ---
+    // If the URL contains ?room=SYS-123&token=abc, verify it immediately
     const urlParams = new URLSearchParams(window.location.search);
     const roomParam = urlParams.get('room');
-    const roleParam = urlParams.get('role');
+    const tokenParam = urlParams.get('token');
     
-    if (roomParam && roleParam) {
-        openSecureChat(roomParam, roleParam);
+    if (roomParam && tokenParam) {
+        verifyMagicLink(roomParam, tokenParam);
     }
 });
 
@@ -20,12 +25,14 @@ function generateCaptcha() {
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
     expectedCaptchaAnswer = num1 + num2;
-    document.getElementById("captcha-question").innerText = `Security Check: What is ${num1} + ${num2}?`;
+    const captchaElement = document.getElementById("captcha-question");
+    if(captchaElement) captchaElement.innerText = `Security Check: What is ${num1} + ${num2}?`;
 }
 
 // --- DASHBOARD NAVIGATION LOGIC ---
 function hideAllSections() {
     document.getElementById("dashboard-nav").style.display = "none";
+    document.getElementById("how-it-works").style.display = "none";
     document.getElementById("lost-section").style.display = "none";
     document.getElementById("found-section").style.display = "none";
     document.getElementById("resume-section").style.display = "none";
@@ -35,9 +42,11 @@ function hideAllSections() {
 
 function showDashboard() {
     hideAllSections();
+    document.getElementById("how-it-works").style.display = "block";
     document.getElementById("dashboard-nav").style.display = "grid";
 }
 
+// Ensure the UI routes perfectly
 document.getElementById("btn-show-lost").addEventListener("click", () => { hideAllSections(); document.getElementById("lost-section").style.display = "block"; });
 document.getElementById("btn-show-found").addEventListener("click", () => { hideAllSections(); document.getElementById("found-section").style.display = "block"; });
 document.getElementById("btn-show-resume").addEventListener("click", () => { hideAllSections(); document.getElementById("resume-section").style.display = "block"; });
@@ -49,19 +58,15 @@ function showModal(title, message, type, roomId = null, role = null) {
     const modalBox = document.getElementById("modal-box");
     const actionBtn = document.getElementById("modal-action-btn");
     
-    modalBox.className = "modal-content"; 
+    modalBox.className = "bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center transform transition-all scale-100 border-t-4 border-amber-500"; 
     
     if (type === "match") {
-        modalBox.classList.add("modal-match");
         actionBtn.innerText = "Initiate Secure Claim";
-        actionBtn.style.backgroundColor = "#e53e3e"; 
+        actionBtn.className = "w-full bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold tracking-wide uppercase py-3.5 rounded-xl transition-all shadow-md"; 
         actionBtn.onclick = function() { closeModal(); openSecureChat(roomId, role); };
     } else {
-        if (type === "success") modalBox.classList.add("modal-success");
-        else if (type === "error") modalBox.classList.add("modal-error");
-        
         actionBtn.innerText = "Acknowledge";
-        actionBtn.style.backgroundColor = "#4a5568";
+        actionBtn.className = "w-full bg-slate-900 hover:bg-black active:scale-[0.98] text-amber-500 font-bold tracking-wide uppercase py-3.5 rounded-xl transition-all shadow-md";
         actionBtn.onclick = closeModal;
     }
     document.getElementById("modal-title").innerText = title;
@@ -71,6 +76,27 @@ function showModal(title, message, type, roomId = null, role = null) {
 
 function closeModal() { document.getElementById("custom-modal").style.display = "none"; }
 
+// --- MAGIC LINK AUTHENTICATION ---
+async function verifyMagicLink(room, token) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/verify-magic-link`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ room_id: room, token: token })
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            openSecureChat(room, data.role);
+        } else {
+            showModal("Link Expired", "This secure link is invalid or has expired. Please use the Resume Claim portal to request a new OTP code.", "error");
+        }
+    } catch (e) {
+        showModal("Connection Error", "Could not verify the secure link with the server.", "error");
+    }
+}
+
+// --- SECURE CHAT LOGIC ---
 function openSecureChat(roomId, role) {
     currentRoom = roomId;
     currentRole = role;
@@ -89,14 +115,20 @@ async function fetchMessages() {
         const result = await response.json();
         const chatBox = document.getElementById("chat-box");
         
-        chatBox.innerHTML = '<div class="message-bubble msg-system">Match Confirmed. Chat session started. You are the ' + currentRole + '.</div>';
+        chatBox.innerHTML = '<div class="text-center text-slate-400 text-xs font-medium my-2 uppercase tracking-widest">Match Confirmed. You are connected as the ' + currentRole + '.</div>';
         
-        result.data.forEach(msg => {
-            const bubble = document.createElement("div");
-            bubble.className = msg.sender === currentRole ? "message-bubble msg-you" : "message-bubble msg-them";
-            bubble.innerText = msg.sender + ": " + msg.message;
-            chatBox.appendChild(bubble);
-        });
+        if (result.data) {
+            result.data.forEach(msg => {
+                const bubble = document.createElement("div");
+                if (msg.sender === currentRole) {
+                    bubble.className = "self-end bg-blue-600 text-white py-2 px-4 rounded-bl-xl rounded-tl-xl rounded-tr-xl max-w-[80%] text-sm shadow-sm";
+                } else {
+                    bubble.className = "self-start bg-slate-200 text-slate-800 py-2 px-4 rounded-br-xl rounded-tr-xl rounded-tl-xl max-w-[80%] text-sm shadow-sm";
+                }
+                bubble.innerText = msg.sender + ": " + msg.message;
+                chatBox.appendChild(bubble);
+            });
+        }
         chatBox.scrollTop = chatBox.scrollHeight; 
 
         await fetch(`${BACKEND_URL}/api/chat/read`, {
@@ -107,16 +139,93 @@ async function fetchMessages() {
     } catch (error) { console.error("Chat sync error", error); }
 }
 
-document.getElementById("resume-claim-form").addEventListener("submit", function(event) {
+// --- DYNAMIC OTP RESUME CLAIM FLOW ---
+document.getElementById("resume-claim-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     const room = document.getElementById("resume-room").value.trim();
-    const role = document.getElementById("resume-role").value;
-    
-    if (room && role) {
-        openSecureChat(room, role);
+    const email = document.getElementById("resume-email").value.trim();
+    const submitBtn = event.target.querySelector('button');
+
+    if (!isOtpStep) {
+        // STEP 1: REQUEST OTP
+        submitBtn.innerHTML = 'Sending Code... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>';
+        lucide.createIcons();
+        
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/auth/request-otp`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ room_id: room, email: email })
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Success: Transform the form into an OTP Input
+                isOtpStep = true;
+                document.getElementById("resume-email").parentElement.style.display = 'none'; 
+                document.getElementById("resume-room").parentElement.style.display = 'none'; 
+                
+                const otpDiv = document.createElement('div');
+                otpDiv.id = 'otp-container';
+                otpDiv.innerHTML = `
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Enter 6-Digit Code sent to ${email}</label>
+                    <input type="text" id="resume-otp" placeholder="e.g. 123456" required maxlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-center tracking-[0.5em] font-bold text-2xl text-slate-800">
+                `;
+                this.insertBefore(otpDiv, submitBtn);
+                
+                submitBtn.innerHTML = 'Verify Code & Enter Chat <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+                lucide.createIcons();
+                showModal("Secure Code Sent", `Please check your inbox. The code expires in 5 minutes.`, "success");
+            } else {
+                showModal("Access Denied", data.detail || "Email does not match the registry records for this System ID.", "error");
+                submitBtn.innerHTML = 'Request Secure Access Code <i data-lucide="mail-check" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        } catch(e) {
+            showModal("Connection Error", "Could not reach the authentication server.", "error");
+            submitBtn.innerHTML = 'Request Secure Access Code <i data-lucide="mail-check" class="w-4 h-4"></i>';
+            lucide.createIcons();
+        }
+    } else {
+        // STEP 2: VERIFY OTP
+        const otp = document.getElementById("resume-otp").value.trim();
+        submitBtn.innerHTML = 'Verifying... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>';
+        lucide.createIcons();
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ room_id: room, email: email, otp: otp })
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Success: Reset form state and enter chat!
+                isOtpStep = false;
+                document.getElementById("otp-container").remove();
+                document.getElementById("resume-email").parentElement.style.display = 'block';
+                document.getElementById("resume-room").parentElement.style.display = 'block';
+                submitBtn.innerHTML = 'Request Secure Access Code <i data-lucide="mail-check" class="w-4 h-4"></i>';
+                lucide.createIcons();
+                this.reset();
+                
+                // Backend automatically tells us if they are the Owner or Finder based on email
+                openSecureChat(room, data.role); 
+            } else {
+                showModal("Verification Failed", data.detail || "Invalid or expired code.", "error");
+                submitBtn.innerHTML = 'Verify Code & Enter Chat <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+                lucide.createIcons();
+            }
+        } catch(e) {
+            showModal("Connection Error", "Could not reach the authentication server.", "error");
+            submitBtn.innerHTML = 'Verify Code & Enter Chat <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            lucide.createIcons();
+        }
     }
 });
 
+// --- CHAT FORM SUBMISSION ---
 document.getElementById("chat-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     const input = document.getElementById("chat-input");
@@ -125,7 +234,7 @@ document.getElementById("chat-form").addEventListener("submit", async function(e
     
     if (messageText !== "") {
         const bubble = document.createElement("div");
-        bubble.className = "message-bubble msg-you";
+        bubble.className = "self-end bg-blue-600 text-white py-2 px-4 rounded-bl-xl rounded-tl-xl rounded-tr-xl max-w-[80%] text-sm shadow-sm mt-2";
         bubble.innerText = currentRole + ": " + messageText;
         chatBox.appendChild(bubble);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -162,6 +271,7 @@ document.getElementById("police-dropoff-form").addEventListener("submit", async 
     } catch (error) { showModal("Error", "Could not log handover.", "error"); }
 });
 
+// --- LOST ITEM FORM ---
 document.getElementById("lost-item-form").addEventListener("submit", async function(event) {
     event.preventDefault(); 
     const userAnswer = parseInt(document.getElementById("captcha-answer").value);
@@ -199,9 +309,10 @@ document.getElementById("lost-item-form").addEventListener("submit", async funct
             generateCaptcha(); 
         } 
     } catch (error) { showModal("Connection Failed", "System is offline.", "error"); } 
-    finally { submitBtn.innerText = "Submit Lost Report"; }
+    finally { submitBtn.innerText = "Submit Trace Request"; }
 });
 
+// --- FOUND ITEM FORM ---
 document.getElementById("found-item-form").addEventListener("submit", async function(event) {
     event.preventDefault();
     const submitBtn = event.target.querySelector('button');
@@ -228,10 +339,10 @@ document.getElementById("found-item-form").addEventListener("submit", async func
             document.getElementById("found-item-form").reset();
         } 
     } catch (error) { showModal("Connection Failed", "System is offline.", "error"); } 
-    finally { submitBtn.innerText = "Secure Found Item"; }
+    finally { submitBtn.innerText = "Secure Property Record"; }
 });
 
-// --- ESCAPE HATCH & CLAIM RESOLUTION ---
+// --- CLAIM RESOLUTION (BURN PROTOCOL) ---
 async function endChatAndBurnBridge(reason) {
     const isConfirmed = confirm(`Are you sure you want to resolve this? This will permanently delete the chat history and finalize the ${reason}.`);
     
@@ -244,7 +355,7 @@ async function endChatAndBurnBridge(reason) {
             if (response.ok) {
                 clearInterval(chatInterval); 
                 alert(`Success: Chat securely erased. The connection has been destroyed.`);
-                window.location.href = "index.html"; 
+                window.location.reload(); 
             } else {
                 alert("Error: Could not delete chat data. Please try again.");
             }

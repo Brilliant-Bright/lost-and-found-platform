@@ -5,8 +5,9 @@ import asyncio
 import requests
 import random
 import string
+import secrets
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -42,7 +43,7 @@ def dispatch_email(to_address: str, subject: str, body: str):
     }
     
     payload = {
-        "sender": {"name": "Lost and Found Registry", "email": "lostnfoundregistry@gmail.com"},
+        "sender": {"name": "National Registry", "email": "lostnfoundregistry@gmail.com"},
         "to": [{"email": to_address}],
         "subject": subject,
         "textContent": body
@@ -57,6 +58,33 @@ def dispatch_email(to_address: str, subject: str, body: str):
         print(f"BREVO FAILED: {e}")
         print("="*50 + "\n")
 
+# --- AUTH & SECURITY LOGIC (OTP & MAGIC LINKS) ---
+def check_user_role(room_id: str, email: str) -> str:
+    """Automatically detects if the email belongs to the Owner or Finder for a specific room."""
+    # Check Owner
+    lost_query = supabase.table("items_lost").select("owner_email").eq("unique_identifier", room_id).execute()
+    if lost_query.data and lost_query.data[0].get("owner_email") == email:
+        return "Owner"
+        
+    # Check Finder
+    found_query = supabase.table("items_found").select("finder_email").eq("unique_identifier", room_id).execute()
+    if found_query.data and found_query.data[0].get("finder_email") == email:
+        return "Finder"
+        
+    return None
+
+def generate_magic_link(email: str, room_id: str) -> str:
+    """Generates a secure, 24-hour single-use magic link."""
+    token = secrets.token_urlsafe(24)
+    expires = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+    
+    supabase.table("auth_tokens").insert({
+        "email": email, "room_id": room_id, 
+        "token_type": "MAGIC_LINK", "token": token, "expires_at": expires
+    }).execute()
+    
+    return f"{FRONTEND_URL}/index.html?room={room_id}&token={token}"
+
 # --- SYMMETRICAL ASYNC CRON JOB ---
 async def cron_monitor_unread_messages():
     print("Cron Job Initialized: Monitoring for unread messages...")
@@ -70,24 +98,22 @@ async def cron_monitor_unread_messages():
                 room_id = msg['room_id']
                 sender = msg['sender']
                 target_email = None
-                magic_link = ""
 
                 if sender == "Finder":
                     lost_item = supabase.table("items_lost").select("owner_email").eq("unique_identifier", room_id).execute()
                     if len(lost_item.data) > 0 and lost_item.data[0]['owner_email']:
                         target_email = lost_item.data[0]['owner_email']
-                        magic_link = f"{FRONTEND_URL}/index.html?room={room_id}&role=Owner"
                 
                 elif sender == "Owner":
                     found_item = supabase.table("items_found").select("finder_email").eq("unique_identifier", room_id).execute()
                     if len(found_item.data) > 0 and found_item.data[0]['finder_email']:
                         target_email = found_item.data[0]['finder_email']
-                        magic_link = f"{FRONTEND_URL}/index.html?room={room_id}&role=Finder"
 
                 if target_email:
+                    magic_link = generate_magic_link(target_email, room_id)
                     anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
                     subject = f"Project Update: New Message [{anti_spam_ref}]"
-                    body = f"Hello,\n\nThis is an automated test message for my university project. You have a new unread message.\n\nLink: {magic_link}\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+                    body = f"Hello,\n\nThis is an automated test message for my university project. You have a new unread message in your secure terminal.\n\nAccess Chat: {magic_link}\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
                     
                     dispatch_email(target_email, subject, body)
                     supabase.table("secure_messages").update({"fallback_sent": True}).eq("id", msg['id']).execute()
@@ -121,7 +147,7 @@ async def cron_police_handover_reminder():
                 finder_email = item['finder_email']
                 anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
                 subject = f"Project Update: Handover Reminder [{anti_spam_ref}]"
-                body = f"Hello,\n\nThis is an automated test reminder for my final year project. 7 days have passed.\n\nLink: {FRONTEND_URL}/index.html\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+                body = f"Hello,\n\nThis is an automated test reminder for my final year project. 7 days have passed since you registered a found item. Please surrender it to the authorities and log the drop-off on the portal to release your liability.\n\nLink: {FRONTEND_URL}/index.html\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
                 dispatch_email(finder_email, subject, body)
         except Exception as e:
             pass
@@ -161,6 +187,19 @@ class PoliceDropoff(BaseModel):
     unique_identifier: str = Field(..., max_length=100)
     police_station: str = Field(..., max_length=150)
 
+class OTPRequest(BaseModel):
+    room_id: str
+    email: str
+
+class OTPVerify(BaseModel):
+    room_id: str
+    email: str
+    otp: str
+
+class MagicLinkVerify(BaseModel):
+    room_id: str
+    token: str
+
 # --- THE SMART ENGINE ---
 def find_best_match(target_item, table_to_search):
     serial = target_item.unique_identifier.strip().upper() if target_item.unique_identifier else ""
@@ -192,7 +231,59 @@ def find_best_match(target_item, table_to_search):
     if best_score >= 2: return best_match_data
     return None
 
-# --- API ROUTES ---
+# --- NEW AUTHENTICATION ROUTES ---
+@app.post("/api/auth/request-otp")
+def request_otp(req: OTPRequest, bg_tasks: BackgroundTasks):
+    role = check_user_role(req.room_id, req.email)
+    if not role:
+        raise HTTPException(status_code=403, detail="Email does not match the registry records for this System ID.")
+        
+    otp_code = ''.join(random.choices(string.digits, k=6))
+    expires = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    
+    supabase.table("auth_tokens").insert({
+        "email": req.email, "room_id": req.room_id, 
+        "token_type": "OTP", "token": otp_code, "expires_at": expires
+    }).execute()
+    
+    subject = f"Secure Access Code: {otp_code}"
+    body = f"Hello,\n\nYour National Registry Secure Access Code is: {otp_code}\n\nThis code is valid for exactly 5 minutes.\n\nThanks,\nBrilliant Bright"
+    bg_tasks.add_task(dispatch_email, req.email, subject, body)
+    
+    return {"status": "success", "message": "Secure code dispatched."}
+
+@app.post("/api/auth/verify-otp")
+def verify_otp(req: OTPVerify):
+    now = datetime.now(timezone.utc).isoformat()
+    # Check if a valid, unexpired OTP exists
+    tokens = supabase.table("auth_tokens").select("*").eq("email", req.email).eq("room_id", req.room_id).eq("token", req.otp).eq("token_type", "OTP").gte("expires_at", now).execute()
+    
+    if not tokens.data:
+        raise HTTPException(status_code=401, detail="Invalid or expired code.")
+        
+    # Burn the token so it cannot be used again
+    supabase.table("auth_tokens").delete().eq("id", tokens.data[0]["id"]).execute()
+    
+    role = check_user_role(req.room_id, req.email)
+    return {"status": "success", "role": role}
+
+@app.post("/api/auth/verify-magic-link")
+def verify_magic_link(req: MagicLinkVerify):
+    now = datetime.now(timezone.utc).isoformat()
+    # Verify the magic link token
+    tokens = supabase.table("auth_tokens").select("*").eq("room_id", req.room_id).eq("token", req.token).eq("token_type", "MAGIC_LINK").gte("expires_at", now).execute()
+    
+    if not tokens.data:
+        raise HTTPException(status_code=401, detail="Invalid or expired secure link.")
+        
+    email = tokens.data[0]["email"]
+    # Burn the magic link so it cannot be shared or forwarded
+    supabase.table("auth_tokens").delete().eq("id", tokens.data[0]["id"]).execute()
+    
+    role = check_user_role(req.room_id, email)
+    return {"status": "success", "role": role}
+
+# --- EXISTING API ROUTES ---
 @app.post("/api/lost-items")
 def report_lost_item(item: LostItem, bg_tasks: BackgroundTasks):
     clean_serial = item.unique_identifier.strip() if item.unique_identifier else f"SECURE-UUID-{str(uuid.uuid4())}"
@@ -216,9 +307,10 @@ def report_lost_item(item: LostItem, bg_tasks: BackgroundTasks):
         if finder_email:
             masked_id = f"***-{match_room_id[-6:]}"
             anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            magic_link = generate_magic_link(finder_email, match_room_id)
             
             subject = f"Project Update: Match Found [{anti_spam_ref}]"
-            body = f"Hello,\n\nThis is an automated test notification for a university project. An item match was initiated for ID: {masked_id}.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Finder\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item match was initiated for ID: {masked_id}.\n\nSecure Access Link: {magic_link}\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
             
             bg_tasks.add_task(dispatch_email, finder_email, subject, body)
 
@@ -246,9 +338,10 @@ def report_found_item(item: FoundItem, bg_tasks: BackgroundTasks):
         if owner_email:
             masked_id = f"***-{match_room_id[-6:]}" 
             anti_spam_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            magic_link = generate_magic_link(owner_email, match_room_id)
             
             subject = f"Project Update: Match Found [{anti_spam_ref}]"
-            body = f"Hello,\n\nThis is an automated test notification for a university project. An item matching your description (ID: {masked_id}) was reported.\n\nLink: {FRONTEND_URL}/index.html?room={match_room_id}&role=Owner\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
+            body = f"Hello,\n\nThis is an automated test notification for a university project. An item matching your description (ID: {masked_id}) was reported.\n\nSecure Access Link: {magic_link}\n\nRef: {anti_spam_ref}\nThanks,\nBrilliant Bright"
             
             bg_tasks.add_task(dispatch_email, owner_email, subject, body)
             
