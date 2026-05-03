@@ -1,4 +1,5 @@
 // --- SECURE ENTERPRISE CONFIGURATION ---
+// Make sure it looks exactly like this:
 const BACKEND_URL = "https://national-registry-api.onrender.com";
 
 let currentRoom = "";
