@@ -200,7 +200,11 @@ document.getElementById("chat-form").addEventListener("submit", function(event) 
 // --- DYNAMIC OTP RESUME CLAIM FLOW ---
 document.getElementById("resume-claim-form").addEventListener("submit", async function(event) {
     event.preventDefault();
-    const room = document.getElementById("resume-room").value.trim();
+    
+    // SECURITY FIX: Sanitize the Room ID to remove broken slashes
+    let rawRoom = document.getElementById("resume-room").value.trim();
+    const room = rawRoom.replace(/\//g, "-");
+    
     const email = document.getElementById("resume-email").value.trim();
     const submitBtn = event.target.querySelector('button');
 
@@ -311,12 +315,16 @@ document.getElementById("lost-item-form").addEventListener("submit", async funct
     const submitBtn = event.target.querySelector('button');
     submitBtn.innerText = "Processing...";
 
+    // SECURITY FIX: Strip slashes from the ID so they don't break the URL routes
+    let rawId = document.getElementById("unique_identifier").value;
+    let safeId = rawId ? rawId.replace(/\//g, "-") : "";
+
     const newItem = {
         owner_email: document.getElementById("owner-email").value,
         category: document.getElementById("category").value,
         color: document.getElementById("color").value,
         description: document.getElementById("description").value,
-        unique_identifier: document.getElementById("unique_identifier").value
+        unique_identifier: safeId
     };
 
     try {
@@ -346,13 +354,17 @@ document.getElementById("found-item-form").addEventListener("submit", async func
     const submitBtn = event.target.querySelector('button');
     submitBtn.innerText = "Processing...";
 
+    // SECURITY FIX: Strip slashes from the ID so they don't break the URL routes
+    let rawId = document.getElementById("found-unique_identifier").value;
+    let safeId = rawId ? rawId.replace(/\//g, "-") : null;
+
     const newItem = {
         finder_email: document.getElementById("finder-email").value,
         category: document.getElementById("found-category").value,
         color: document.getElementById("found-color").value,
         description: document.getElementById("found-description").value,
         withheld_feature: document.getElementById("withheld_feature").value,
-        unique_identifier: document.getElementById("found-unique_identifier").value || null
+        unique_identifier: safeId
     };
 
     try {
