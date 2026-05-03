@@ -68,8 +68,7 @@ def dispatch_email(to_address: str, subject: str, body: str):
     }
     
     payload = {
-        "sender": {"name": "National Registry", "email": "lostnfoundregistry@gmail.com"},
-        "to": [{"email": to_address}],
+        "sender": {"name": "Lost and Found Registry", "email": "lostnfoundregistry@gmail.com"},
         "subject": subject,
         "textContent": body
     }
