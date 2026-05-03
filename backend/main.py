@@ -7,7 +7,7 @@ import random
 import string
 import secrets
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -31,6 +31,31 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 FRONTEND_URL = "https://lost-and-found-platform-sage.vercel.app"
+
+# --- REAL-TIME WEBSOCKET MANAGER ---
+class ConnectionManager:
+    def __init__(self):
+        # Dictionary to hold active connections for each room
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, room_id: str):
+        await websocket.accept() # This answers the phone so we don't get a 403!
+        if room_id not in self.active_connections:
+            self.active_connections[room_id] = []
+        self.active_connections[room_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, room_id: str):
+        if room_id in self.active_connections:
+            self.active_connections[room_id].remove(websocket)
+            if not self.active_connections[room_id]:
+                del self.active_connections[room_id]
+
+    async def broadcast_to_room(self, message: dict, room_id: str):
+        if room_id in self.active_connections:
+            for connection in self.active_connections[room_id]:
+                await connection.send_json(message)
+
+manager = ConnectionManager()
 
 # --- HTTP EMAIL DISPATCHER (UNDER THE RADAR MODE) ---
 def dispatch_email(to_address: str, subject: str, body: str):
@@ -283,6 +308,30 @@ def verify_magic_link(req: MagicLinkVerify):
     role = check_user_role(req.room_id, email)
     return {"status": "success", "role": role}
 
+# --- REAL-TIME WEBSOCKET ENDPOINT ---
+@app.websocket("/ws/chat/{room_id}/{role}")
+async def websocket_chat(websocket: WebSocket, room_id: str, role: str):
+    await manager.connect(websocket, room_id)
+    try:
+        while True:
+            # Wait for a message from the client
+            data = await websocket.receive_text()
+            
+            # Save the message securely to the Supabase database
+            supabase.table("secure_messages").insert({
+                "room_id": room_id, 
+                "sender": role, 
+                "message": data,
+                "is_read": False, 
+                "fallback_sent": False
+            }).execute()
+            
+            # Broadcast the message to anyone connected to this specific room
+            await manager.broadcast_to_room({"sender": role, "message": data}, room_id)
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, room_id)
+
 # --- EXISTING API ROUTES ---
 @app.post("/api/lost-items")
 def report_lost_item(item: LostItem, bg_tasks: BackgroundTasks):
@@ -353,14 +402,6 @@ def report_found_item(item: FoundItem, bg_tasks: BackgroundTasks):
 def register_police_dropoff(dropoff: PoliceDropoff):
     supabase.table("items_found").update({"police_station": dropoff.police_station}).eq("unique_identifier", dropoff.unique_identifier).execute()
     return {"status": "success", "message": "Item successfully transferred to Police custody. Thank you for your civic duty."}
-
-@app.post("/api/chat")
-def send_message(msg: ChatMessage):
-    supabase.table("secure_messages").insert({
-        "room_id": msg.room_id, "sender": msg.sender, "message": msg.message,
-        "is_read": False, "fallback_sent": False
-    }).execute()
-    return {"status": "success"}
 
 @app.get("/api/chat/{room_id}")
 def get_messages(room_id: str):
